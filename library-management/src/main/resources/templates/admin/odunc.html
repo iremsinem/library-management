@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Ödünç İşlemleri - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        body { background-color: #ffffff; }
+        .card-stats { cursor: pointer; transition: 0.3s; }
+        .card-stats:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .sidebar-placeholder { width: 250px; background: #f8f9fa; min-height: 100vh; float: left; } /* Sidebar için yer */
+        .content-area { margin-left: 260px; padding: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar-placeholder">
+    <div class="p-3"><h5>Library Admin</h5></div>
+</div>
+
+<div class="content-area">
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary bg-opacity-10 border-primary shadow-sm card-stats" onclick="filterTable('all')">
+                <div class="card-body">
+                    <h6 class="text-primary fw-bold">Sistemdeki Toplam Kitap</h6>
+                    <h2 class="text-primary" th:text="${totalBooks ?: 68}">68</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success bg-opacity-10 border-success shadow-sm card-stats" onclick="filterTable('active')">
+                <div class="card-body">
+                    <h6 class="text-success fw-bold">Aktif Ödünç Verilen</h6>
+                    <h2 class="text-success" th:text="${activeBorrowings ?: 5}">5</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-danger bg-opacity-10 border-danger shadow-sm card-stats" onclick="filterTable('overdue')">
+                <div class="card-body">
+                    <h6 class="text-danger fw-bold">Gecikmiş İadeler</h6>
+                    <h2 class="text-danger" th:text="${overdueCount ?: 5}">5</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">Ödünç Ver</div>
+                <div class="card-body">
+                    <form th:action="@{/admin/odunc/save}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Barkod & Kitap</label>
+                            <select class="form-select searchable-select" name="kopyaId">
+                                <option value="">--- Kitap Seçiniz ---</option>
+                                <option th:each="kitap : ${kitaplar}" th:value="${kitap.id}" th:text="${kitap.barkod + ' - ' + kitap.baslik}"></option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Üye</label>
+                            <select class="form-select searchable-select" name="kullaniciId">
+                                <option value="">--- Kullanıcı Seçiniz ---</option>
+                                <option th:each="user : ${kullanicilar}" th:value="${user.id}" th:text="${user.ad + ' ' + user.soyad}"></option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Geri Teslim Tarihi</label>
+                            <input type="date" class="form-control" name="teslimTarihi">
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Ödüncü Onayla</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">İade Al</div>
+                <div class="card-body">
+                    <form th:action="@{/admin/odunc/return}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">İşlem ID</label>
+                            <input type="number" class="form-control" name="oduncId" placeholder="Ödünç ID giriniz">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Açıklama</label>
+                            <textarea class="form-control" name="aciklama" rows="1" placeholder="Varsa notunuzu yazın"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Kitap Durumu</label>
+                            <select class="form-select" name="kitapDurumu">
+                                <option value="Iyi">İyi</option>
+                                <option value="Hasarli">Hasarlı</option>
+                                <option value="Eksik_Sayfa">Eksik Sayfa</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">İade Al ve Bitir</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ödünç Listesi Tablosu (Başlangıçta tüm liste görünür, kartlara tıklanınca filtrelenir) -->
+    <div class="row mb-4" id="oduncListRow">
+        <div class="col-md-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                    <span id="listTitle" class="fw-bold">Ödünç Listesi</span>
+                    <button class="btn btn-sm btn-light" onclick="hideTable()">Gizle</button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped m-0" id="oduncTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Kullanıcı / Üye</th>
+                                    <th>Kitap</th>
+                                    <th>Barkod</th>
+                                    <th>Geri Teslim Tarihi</th>
+                                    <th>Gecikme Cezası</th>
+                                    <th>Durum</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Thymeleaf ile oduncler listesini dönüyoruz -->
+                                <tr th:each="odunc : ${oduncler}" class="odunc-row" th:data-status="${odunc.getDurum() != null ? (odunc.getDurum().toString() == 'GECIKMIS' ? 'overdue' : 'active') : 'active'}">
+                                    <td th:text="${odunc.id}">1</td>
+                                    <td th:text="${odunc.kullanici != null ? odunc.kullanici.ad + ' ' + odunc.kullanici.soyad : (odunc.kullaniciId != null ? odunc.kullaniciId : '-')}">Üye Adı</td>
+                                    <td th:text="${odunc.kopya != null && odunc.kopya.kitap != null ? odunc.kopya.kitap.baslik : (odunc.kopyaId != null ? odunc.kopyaId : '-')}">Kitap Adı</td>
+                                    <td th:text="${odunc.barkod != null ? odunc.barkod : '-'}">Barkod</td>
+                                    <td th:text="${odunc.teslimTarihi}">2026-05-15</td>
+                                    <td th:text="${odunc.cezaTutari() > 0 ? odunc.cezaTutari() + ' TL' : '-'}">-</td>
+                                    <td>
+                                        <span class="badge" th:classappend="${odunc.getDurum() != null && odunc.getDurum().toString() == 'GECIKMIS' ? 'bg-danger' : 'bg-success'}" th:text="${odunc.getDurum() != null ? odunc.getDurum() : 'Aktif'}">Aktif</span>
+                                    </td>
+                                </tr>
+                                <!-- Veri yoksa örnek gösterim için (Eğer oduncler boşsa ve test etmek isterseniz HTML olarak kalabilir, thymeleaf sadece veritabanında varsa renderlar) -->
+                                <tr th:if="${#lists.isEmpty(oduncler)}" class="odunc-row" data-status="overdue">
+                                    <td>Örnek-1</td>
+                                    <td>Ahmet Yılmaz</td>
+                                    <td>Suç ve Ceza</td>
+                                    <td>BRK-123</td>
+                                    <td>2024-01-01</td>
+                                    <td>150.0 TL</td>
+                                    <td><span class="badge bg-danger">Gecikmiş</span></td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(oduncler)}" class="odunc-row" data-status="active">
+                                    <td>Örnek-2</td>
+                                    <td>Ayşe Demir</td>
+                                    <td>Sefiller</td>
+                                    <td>BRK-456</td>
+                                    <td>2026-12-31</td>
+                                    <td>-</td>
+                                    <td><span class="badge bg-success">Aktif</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.searchable-select').select2({
+            placeholder: "Seçim yapınız...",
+            allowClear: true
+        });
+        
+        // Sayfa açıldığında varsayılan olarak tüm listeyi göster (aşağı kaydırma yapmadan)
+        filterTable('all', false);
+    });
+
+    function filterTable(status, shouldScroll = true) {
+        console.log("Filtreleme tetiklendi: " + status);
+        
+        // Tablo gizliyse görünür yapıyoruz
+        if ($('#oduncListRow').is(':hidden')) {
+            $('#oduncListRow').fadeIn(300);
+        }
+        
+        // Başlığı güncelliyoruz
+        let title = "Tüm Ödünç İşlemleri";
+        if (status === 'active') title = "Aktif Ödünç Verilenler Listesi";
+        else if (status === 'overdue') title = "Gecikmiş İadeler Listesi";
+        $('#listTitle').text(title);
+
+        // Satırları filtreliyoruz
+        if (status === 'all') {
+            $('.odunc-row').show();
+        } else {
+            $('.odunc-row').hide();
+            $('.odunc-row[data-status="' + status + '"]').show();
+        }
+        
+        // Yumuşak kaydırma ile tabloya odaklanıyoruz (Sadece kartlara tıklandığında çalışır)
+        if (shouldScroll) {
+            $('html, body').animate({
+                scrollTop: $("#oduncListRow").offset().top - 50
+            }, 500);
+        }
+    }
+
+    function hideTable() {
+        $('#oduncListRow').fadeOut(300);
+    }
+</script>
+</body>
+</html>
