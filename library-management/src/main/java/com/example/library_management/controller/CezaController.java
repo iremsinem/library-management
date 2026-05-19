@@ -85,12 +85,4 @@ public class CezaController {
         // 4. Listeye geri dön
         return "redirect:/cezalar";
     }
-
-    // Kullanıcıya özel ceza listeleme sayfası
-    @GetMapping("/user")
-    public String listUserCezalar(Model model) {
-        List<Ceza> cezalar = cezaRepository.findAll();
-        model.addAttribute("cezalar", cezalar);
-        return "user/ceza";
-    }
 }

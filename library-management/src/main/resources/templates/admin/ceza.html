@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ceza İşlemleri - Admin Paneli</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <style>
         :root {
             --bg-color: #f0f4f8;
@@ -26,6 +27,10 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
+            padding: 0;
+        }
+
+        .content-area {
             padding: 2rem;
         }
 
@@ -240,7 +245,63 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div th:replace="~{admin/sidebar :: sidebar}" id="sidebar" class="sidebar">
+    <!-- Statik önizleme için -->
+    <div class="sidebar-header">
+        <h5 class="sidebar-title m-0">Library Admin</h5>
+        <button class="toggle-btn" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+    <ul class="nav flex-column mt-3">
+        <li class="nav-item"><a th:href="@{/admin/dashboard}" href="dashboard.html" class="nav-link"><i class="fa-solid fa-chart-pie"></i><span class="sidebar-text">Dashboard</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-book"></i><span class="sidebar-text">Kitap Listeleri</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-users"></i><span class="sidebar-text">Kullanıcılar</span></a></li>
+        <li class="nav-item"><a th:href="@{/odunc-islemleri}" href="odunc.html" class="nav-link"><i class="fa-solid fa-hand-holding-hand"></i><span class="sidebar-text">Ödünç İşlemleri</span></a></li>
+        <li class="nav-item"><a th:href="@{/cezalar}" href="ceza.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i><span class="sidebar-text">Cezalar</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span class="sidebar-text">Rezervasyonlar</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-gear"></i><span class="sidebar-text">Sistem Ayarları</span></a></li>
+    </ul>
+    <style>
+        .sidebar { width: 260px; background: #1e293b; color: #fff; min-height: 100vh; position: fixed; top: 0; left: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; overflow-y: auto; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
+        .sidebar.collapsed { width: 76px; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar.collapsed .sidebar-title { display: none; }
+        .sidebar .nav { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
+        .sidebar .nav-item { margin-bottom: 4px; }
+        .sidebar .nav-link { color: #cbd5e1; padding: 14px 24px; transition: 0.2s; white-space: nowrap; overflow: hidden; display: flex; align-items: center; text-decoration: none; font-size: 15px; font-weight: 500; }
+        .sidebar .nav-link:hover { color: #fff; background: rgba(255,255,255,0.1); border-left: 4px solid #3b82f6; padding-left: 20px; }
+        .sidebar .nav-link i { min-width: 32px; font-size: 1.25rem; text-align: center; margin-right: 12px; }
+        .sidebar.collapsed .nav-link i { margin-right: 0; }
+        .sidebar .sidebar-text { transition: opacity 0.3s; }
+        .sidebar.collapsed .sidebar-text { opacity: 0; display: none; }
+        .toggle-btn { background: transparent; color: #cbd5e1; border: none; font-size: 1.25rem; cursor: pointer; padding: 4px; border-radius: 4px; transition: 0.2s; }
+        .toggle-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .content-area { margin-left: 260px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); min-height: 100vh; }
+        .content-area.collapsed { margin-left: 76px; }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const contentArea = document.querySelector('.content-area');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            
+            // Check localStorage for sidebar state
+            if(localStorage.getItem('sidebarCollapsed') === 'true') {
+                if(sidebar) sidebar.classList.add('collapsed');
+                if(contentArea) contentArea.classList.add('collapsed');
+            }
+
+            if(toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    if(sidebar) sidebar.classList.toggle('collapsed');
+                    if(contentArea) contentArea.classList.toggle('collapsed');
+                    if(sidebar) localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+                });
+            }
+        });
+    </script>
+    </div>
+    <div class="content-area">
+        <div class="container">
         <div class="header">
             <h1>Ceza İşlemleri</h1>
         </div>
@@ -394,5 +455,6 @@
             }
         });
     </script>
+    </div>
 </body>
 </html>

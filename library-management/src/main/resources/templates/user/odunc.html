@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ödünç İşlemlerim - Kullanıcı Paneli</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --bg-color: #f8fafc;
@@ -282,9 +283,328 @@
             color: var(--danger);
             font-variant-numeric: tabular-nums;
         }
+
+        /* Modal Overlay & Transitions */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .payment-modal {
+            background-color: #ffffff;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+        }
+
+        .modal-overlay.active .payment-modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover {
+            color: var(--danger);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        /* Virtual Credit Card */
+        .card-container {
+            width: 100%;
+            height: 200px;
+            perspective: 1000px;
+            margin-bottom: 1.5rem;
+        }
+
+        .virtual-card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 16px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .virtual-card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: 16px;
+            color: #fff;
+            padding: 1.5rem;
+            box-sizing: border-box;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 0;
+            justify-content: flex-start;
+        }
+
+        .card-chip {
+            width: 48px;
+            height: 35px;
+            background: linear-gradient(135deg, #ffd700 0%, #b8860b 100%);
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .card-number {
+            font-size: 1.35rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            word-spacing: 4px;
+            margin-bottom: 1rem;
+            font-family: monospace;
+        }
+
+        .card-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .card-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #94a3b8;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-value {
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .card-black-bar {
+            width: 100%;
+            height: 45px;
+            background: #000;
+            margin-top: 1.5rem;
+        }
+
+        .card-signature-bar {
+            width: 80%;
+            height: 35px;
+            background: #e2e8f0;
+            margin: 1rem 10% 0 10%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 15px;
+            color: #0f172a;
+            font-weight: 600;
+            font-style: italic;
+            font-family: monospace;
+            border-radius: 4px;
+        }
+
+        /* Inputs */
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            flex: 1;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        .form-input {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        }
+
+        /* Loader & Success */
+        .payment-loader {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.96);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .payment-loader.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f1f5f9;
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        .success-checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #d1fae5;
+            color: #059669;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            animation: popCheckmark 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes popCheckmark {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
+
+<div th:replace="~{user/sidebar :: sidebar}" id="sidebar" class="sidebar">
+    <!-- Statik önizleme için (Thymeleaf çalıştırılmadığında tarayıcının göreceği kod) -->
+    <div class="sidebar-header">
+        <h5 class="sidebar-title m-0">Library User</h5>
+        <button class="toggle-btn" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+    <ul class="nav flex-column mt-3">
+        <li class="nav-item"><a th:href="@{/user/dashboard}" href="dashboard.html" class="nav-link"><i class="fa-solid fa-chart-pie"></i><span class="sidebar-text">Dashboard</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-book"></i><span class="sidebar-text">Kitaplarım</span></a></li>
+        <li class="nav-item"><a th:href="@{/odunc-islemleri/user}" href="odunc.html" class="nav-link"><i class="fa-solid fa-credit-card"></i><span class="sidebar-text">Ceza Ödeme</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span class="sidebar-text">Rezervasyonlar</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-user-gear"></i><span class="sidebar-text">Hesap Ayarları</span></a></li>
+    </ul>
+    <style>
+        .sidebar { width: 260px; background: #0f172a; color: #fff; min-height: 100vh; position: fixed; top: 0; left: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; overflow-y: auto; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
+        .sidebar.collapsed { width: 76px; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar.collapsed .sidebar-title { display: none; }
+        .sidebar .nav { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
+        .sidebar .nav-item { margin-bottom: 4px; }
+        .sidebar .nav-link { color: #cbd5e1; padding: 14px 24px; transition: 0.2s; white-space: nowrap; overflow: hidden; display: flex; align-items: center; text-decoration: none; font-size: 15px; font-weight: 500; }
+        .sidebar .nav-link:hover { color: #fff; background: rgba(255,255,255,0.1); border-left: 4px solid #4f46e5; padding-left: 20px; }
+        .sidebar .nav-link i { min-width: 32px; font-size: 1.25rem; text-align: center; margin-right: 12px; }
+        .sidebar.collapsed .nav-link i { margin-right: 0; }
+        .sidebar .sidebar-text { transition: opacity 0.3s; }
+        .sidebar.collapsed .sidebar-text { opacity: 0; display: none; }
+        .toggle-btn { background: transparent; color: #cbd5e1; border: none; font-size: 1.25rem; cursor: pointer; padding: 4px; border-radius: 4px; transition: 0.2s; }
+        .toggle-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .content-area { margin-left: 260px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); min-height: 100vh; padding: 2rem; }
+        .content-area.collapsed { margin-left: 76px; }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const contentArea = document.querySelector('.content-area');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            
+            if(localStorage.getItem('sidebarCollapsed') === 'true') {
+                sidebar.classList.add('collapsed');
+                if(contentArea) contentArea.classList.add('collapsed');
+            }
+
+            if(toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    sidebar.classList.toggle('collapsed');
+                    if(contentArea) contentArea.classList.toggle('collapsed');
+                    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+                });
+            }
+        });
+    </script>
+</div>
+
+<div class="content-area">
     <div class="container">
         <div class="page-header">
             <h1>Ödünç İşlemlerim</h1>
@@ -350,7 +670,7 @@
                                 <th>Durum</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="gecmisBody">
                             <tr>
                                 <td><span style="font-weight: 500;">Suç ve Ceza</span></td>
                                 <td>Dostoyevski</td>
@@ -425,6 +745,7 @@
             </div>
         </div>
     </div>
+</div> <!-- content-area end -->
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -510,20 +831,251 @@
                 });
             });
 
-            // Pay Penalty Button Click
+            // Pay Penalty Button Click (Modal Open)
+            const btnCloseModal = document.getElementById('btnCloseModal');
+            const paymentOverlay = document.getElementById('paymentOverlay');
+            const modalTotalAmount = document.getElementById('modalTotalAmount');
+
             if (btnPayPenalty) {
                 btnPayPenalty.addEventListener('click', function() {
-                    const selectedIds = Array.from(penaltyCheckboxes)
-                        .filter(cb => cb.checked)
-                        .map(cb => cb.value);
+                    // Seçilenlerin toplam tutarını hesapla
+                    let total = 0;
+                    const selectedCheckboxes = Array.from(penaltyCheckboxes).filter(cb => cb.checked);
                     
-                    if (selectedIds.length > 0) {
-                        alert('Seçilen cezalar (' + selectedIds.join(', ') + ') ödeme ekranına yönlendiriliyor...');
-                        // AJAX or Form Submission logic goes here
-                    }
+                    selectedCheckboxes.forEach(cb => {
+                        const row = cb.closest('tr');
+                        const amountText = row.querySelector('.amount').textContent;
+                        const amount = parseFloat(amountText.replace(/[^\d.]/g, ''));
+                        total += amount;
+                    });
+                    
+                    modalTotalAmount.textContent = total.toFixed(2) + ' ₺';
+                    paymentOverlay.classList.add('active');
                 });
             }
+
+            if (btnCloseModal) {
+                btnCloseModal.addEventListener('click', function() {
+                    paymentOverlay.classList.remove('active');
+                });
+            }
+
+            // Virtual Card Input Bindings and Visual Formatting
+            const cardholderNameInput = document.getElementById('cardholderName');
+            const cardNumberInput = document.getElementById('cardNumber');
+            const cardExpiryInput = document.getElementById('cardExpiry');
+            const cardCvvInput = document.getElementById('cardCvv');
+            
+            const vCard = document.getElementById('vCard');
+            const vCardName = document.getElementById('vCardName');
+            const vCardNumber = document.getElementById('vCardNumber');
+            const vCardExpiry = document.getElementById('vCardExpiry');
+            const vCardCvv = document.getElementById('vCardCvv');
+
+            cardholderNameInput.addEventListener('input', function() {
+                vCardName.textContent = this.value.toUpperCase() || 'AD SOYAD';
+            });
+
+            cardNumberInput.addEventListener('input', function() {
+                let val = this.value.replace(/\D/g, '');
+                let formatted = '';
+                for(let i = 0; i < val.length; i++) {
+                    if(i > 0 && i % 4 === 0) formatted += ' ';
+                    formatted += val[i];
+                }
+                this.value = formatted;
+                vCardNumber.textContent = formatted || '•••• •••• •••• ••••';
+            });
+
+            cardExpiryInput.addEventListener('input', function() {
+                let val = this.value.replace(/\D/g, '');
+                if(val.length > 2) {
+                    val = val.substring(0, 2) + '/' + val.substring(2, 4);
+                }
+                this.value = val;
+                vCardExpiry.textContent = val || 'AA/YY';
+            });
+
+            cardCvvInput.addEventListener('focus', function() {
+                vCard.classList.add('flipped');
+            });
+
+            cardCvvInput.addEventListener('blur', function() {
+                vCard.classList.remove('flipped');
+            });
+
+            cardCvvInput.addEventListener('input', function() {
+                let val = this.value.replace(/\D/g, '');
+                this.value = val;
+                vCardCvv.textContent = val || '•••';
+            });
+
+            // Simulated Payment Processing
+            const paymentForm = document.getElementById('paymentForm');
+            const paymentLoader = document.getElementById('paymentLoader');
+            const paymentSpinner = document.getElementById('paymentSpinner');
+            const paymentSuccessIcon = document.getElementById('paymentSuccessIcon');
+            const paymentStatusText = document.getElementById('paymentStatusText');
+            const paymentSubtext = document.getElementById('paymentSubtext');
+            const gecmisBody = document.getElementById('gecmisBody');
+            const penaltiesBody = document.getElementById('penaltiesBody');
+
+            paymentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Show processing spinner
+                paymentLoader.classList.add('active');
+                paymentSpinner.style.display = 'block';
+                paymentSuccessIcon.style.display = 'none';
+                paymentStatusText.textContent = 'Ödemeniz İşleniyor...';
+                paymentSubtext.textContent = 'Lütfen bu pencereyi kapatmayın veya sayfayı yenilemeyin.';
+
+                // Simulate payment after 2 seconds
+                setTimeout(() => {
+                    paymentSpinner.style.display = 'none';
+                    paymentSuccessIcon.style.display = 'flex';
+                    paymentStatusText.textContent = 'Ödeme Başarılı!';
+                    paymentSubtext.textContent = 'Cezanız tahsil edildi. İşlemleriniz geçmişe aktarıldı.';
+
+                    // Move items from unpaid to paid
+                    setTimeout(() => {
+                        const selectedCheckboxes = Array.from(penaltyCheckboxes).filter(cb => cb.checked);
+                        
+                        selectedCheckboxes.forEach(cb => {
+                            const row = cb.closest('tr');
+                            const bookName = row.cells[2].textContent;
+                            const amount = row.querySelector('.amount').textContent;
+                            const today = new Date().toLocaleDateString('tr-TR');
+
+                            const newRow = document.createElement('tr');
+                            newRow.innerHTML = `
+                                <td><span style="font-weight: 500;">${bookName}</span></td>
+                                <td>Gecikme Cezası Ödendi</td>
+                                <td>-</td>
+                                <td>${today}</td>
+                                <td><span class="status-badge status-returned" style="background-color: #def7ec; color: #03543f;">${amount} Ödendi</span></td>
+                            `;
+                            gecmisBody.insertBefore(newRow, gecmisBody.firstChild);
+                            row.remove();
+                        });
+
+                        paymentForm.reset();
+                        vCardName.textContent = 'AD SOYAD';
+                        vCardNumber.textContent = '•••• •••• •••• ••••';
+                        vCardExpiry.textContent = 'AA/YY';
+                        vCardCvv.textContent = '•••';
+                        
+                        paymentOverlay.classList.remove('active');
+                        paymentLoader.classList.remove('active');
+                        
+                        selectAllPenalties.checked = false;
+                        selectAllPenalties.indeterminate = false;
+                        btnPayPenalty.disabled = true;
+
+                        const remainingRows = penaltiesBody.querySelectorAll('tr');
+                        if (remainingRows.length === 0) {
+                            penaltiesBody.innerHTML = `
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="fa-solid fa-circle-check text-success fs-3 mb-2 d-block"></i>
+                                        Ödenmemiş cezanız bulunmamaktadır.
+                                    </td>
+                                </tr>
+                            `;
+                        }
+
+                    }, 1500);
+
+                }, 2000);
+            });
         });
     </script>
+
+    <!-- Online Ödeme Modal Overlay -->
+    <div class="modal-overlay" id="paymentOverlay">
+        <div class="payment-modal position-relative">
+            <!-- Simulated Loading Screen -->
+            <div class="payment-loader" id="paymentLoader">
+                <div class="spinner" id="paymentSpinner"></div>
+                <div class="success-checkmark" id="paymentSuccessIcon" style="display: none;">
+                    <i class="fa-solid fa-check text-success" style="font-size: 2.5rem;"></i>
+                </div>
+                <h5 class="fw-bold mt-2" id="paymentStatusText">Ödemeniz İşleniyor...</h5>
+                <p class="text-muted small px-4 text-center" id="paymentSubtext">Lütfen bu pencereyi kapatmayın veya sayfayı yenilemeyin.</p>
+            </div>
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h5 class="modal-title">Online Ceza Ödemesi</h5>
+                <button class="close-modal" id="btnCloseModal">&times;</button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="modal-body">
+                <!-- Virtual Credit Card Design -->
+                <div class="card-container">
+                    <div class="virtual-card" id="vCard">
+                        <!-- Card Front -->
+                        <div class="card-front">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="card-chip"></div>
+                                <i class="fa-solid fa-credit-card fa-2xl"></i>
+                            </div>
+                            <div class="card-number" id="vCardNumber">•••• •••• •••• ••••</div>
+                            <div class="card-info-row">
+                                <div>
+                                    <div class="card-label">KART SAHİBİ</div>
+                                    <div class="card-value" id="vCardName">AD SOYAD</div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="card-label">AY / YIL</div>
+                                    <div class="card-value" id="vCardExpiry">AA/YY</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Card Back -->
+                        <div class="card-back">
+                            <div class="card-black-bar"></div>
+                            <div class="card-signature-bar" id="vCardCvv">•••</div>
+                            <div class="px-3 py-2 text-end text-white-50" style="font-size: 0.6rem; letter-spacing: 1px;">
+                                SECURITY CODE
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Form -->
+                <form id="paymentForm" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="cardholderName">KART SAHİBİ ADI SOYADI</label>
+                        <input type="text" id="cardholderName" class="form-input" required placeholder="Kart üzerindeki isim" maxlength="26" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="cardNumber">KART NUMARASI</label>
+                        <input type="text" id="cardNumber" class="form-input" required placeholder="0000 0000 0000 0000" maxlength="19" autocomplete="off">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cardExpiry">SON KULLANMA TARİHİ</label>
+                            <input type="text" id="cardExpiry" class="form-input" required placeholder="AA/YY" maxlength="5" autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="cardCvv">CVV / GÜVENLİK KODU</label>
+                            <input type="text" id="cardCvv" class="form-input" required placeholder="000" maxlength="3" autocomplete="off">
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 mb-3 border">
+                        <span class="fw-bold text-secondary small">ÖDENECEK TOPLAM:</span>
+                        <span class="fs-4 fw-bold text-danger" id="modalTotalAmount">0.00 ₺</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-3" style="font-size: 1rem; border-radius: 12px;" id="btnSubmitPayment">
+                        Ödemeyi Tamamla
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
