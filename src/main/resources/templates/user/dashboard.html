@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanıcı Paneli - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --card-bg: #ffffff;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --success: #10b981;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+            --row-hover: #f1f5f9;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* Welcome Card */
+        .welcome-card {
+            background: linear-gradient(135deg, #4f46e5 0%, #312e81 100%);
+            border-radius: 20px;
+            color: #ffffff;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-card::after {
+            content: "";
+            position: absolute;
+            top: -20%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .welcome-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.05rem;
+            margin: 0;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-info h3 {
+            margin: 0;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin: 0.5rem 0 0 0;
+            color: var(--text-main);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .icon-blue { background-color: #eff6ff; color: #3b82f6; }
+        .icon-green { background-color: #ecfdf5; color: #10b981; }
+        .icon-red { background-color: #fef2f2; color: #ef4444; }
+        .icon-purple { background-color: #faf5ff; color: #a855f7; }
+
+        /* Dashboard Content Row */
+        .dashboard-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.75rem;
+        }
+
+        /* Custom List Styling */
+        .activity-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .book-details {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .book-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .book-name {
+            font-weight: 500;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .book-author {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin: 2px 0 0 0;
+        }
+
+        .badge {
+            padding: 0.25rem 0.65rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success { background-color: #d1fae5; color: #065f46; }
+        .badge-warning { background-color: #fef3c7; color: #92400e; }
+        .badge-info { background-color: #e0f2fe; color: #075985; }
+
+        /* Quick reservation list */
+        .reservation-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 0.85rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .reservation-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{user/sidebar :: sidebar}" id="sidebar" class="sidebar">
+    <!-- Statik önizleme için (Thymeleaf çalıştırılmadığında tarayıcının göreceği kod) -->
+    <div class="sidebar-header">
+        <h5 class="sidebar-title m-0">Library User</h5>
+        <button class="toggle-btn" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+    <ul class="nav flex-column mt-3">
+        <li class="nav-item"><a th:href="@{/user/dashboard}" href="dashboard.html" class="nav-link"><i class="fa-solid fa-chart-pie"></i><span class="sidebar-text">Dashboard</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-book"></i><span class="sidebar-text">Kitaplarım</span></a></li>
+        <li class="nav-item"><a th:href="@{/odunc-islemleri/user}" href="odunc.html" class="nav-link"><i class="fa-solid fa-credit-card"></i><span class="sidebar-text">Ceza Ödeme</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span class="sidebar-text">Rezervasyonlar</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-user-gear"></i><span class="sidebar-text">Hesap Ayarları</span></a></li>
+    </ul>
+    <style>
+        .sidebar { width: 260px; background: #0f172a; color: #fff; min-height: 100vh; position: fixed; top: 0; left: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; overflow-y: auto; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
+        .sidebar.collapsed { width: 76px; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar.collapsed .sidebar-title { display: none; }
+        .sidebar .nav { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
+        .sidebar .nav-item { margin-bottom: 4px; }
+        .sidebar .nav-link { color: #cbd5e1; padding: 14px 24px; transition: 0.2s; white-space: nowrap; overflow: hidden; display: flex; align-items: center; text-decoration: none; font-size: 15px; font-weight: 500; }
+        .sidebar .nav-link:hover { color: #fff; background: rgba(255,255,255,0.1); border-left: 4px solid #4f46e5; padding-left: 20px; }
+        .sidebar .nav-link i { min-width: 32px; font-size: 1.25rem; text-align: center; margin-right: 12px; }
+        .sidebar.collapsed .nav-link i { margin-right: 0; }
+        .sidebar .sidebar-text { transition: opacity 0.3s; }
+        .sidebar.collapsed .sidebar-text { opacity: 0; display: none; }
+        .toggle-btn { background: transparent; color: #cbd5e1; border: none; font-size: 1.25rem; cursor: pointer; padding: 4px; border-radius: 4px; transition: 0.2s; }
+        .toggle-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .content-area { margin-left: 260px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); min-height: 100vh; padding: 2rem; }
+        .content-area.collapsed { margin-left: 76px; }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const contentArea = document.querySelector('.content-area');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            
+            if(localStorage.getItem('sidebarCollapsed') === 'true') {
+                sidebar.classList.add('collapsed');
+                if(contentArea) contentArea.classList.add('collapsed');
+            }
+
+            if(toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    sidebar.classList.toggle('collapsed');
+                    if(contentArea) contentArea.classList.toggle('collapsed');
+                    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+                });
+            }
+        });
+    </script>
+</div>
+
+<div class="content-area">
+    <div class="container">
+        <!-- Welcome Section -->
+        <div class="welcome-card">
+            <h1 class="welcome-title">Hoş Geldiniz!</h1>
+            <p class="welcome-subtitle">Kütüphane hesabınızın durumunu ve ödünç işlemlerinizi buradan takip edebilirsiniz.</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <!-- Stat 1 -->
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>Okuduğum Kitaplar</h3>
+                    <p class="stat-value" th:text="${myReadCount}">14</p>
+                </div>
+                <div class="stat-icon icon-green">
+                    <i class="fa-solid fa-square-check"></i>
+                </div>
+            </div>
+            <!-- Stat 2 -->
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>Şu An Üzerimdeki</h3>
+                    <p class="stat-value" th:text="${myActiveCount}">2</p>
+                </div>
+                <div class="stat-icon icon-blue">
+                    <i class="fa-solid fa-book-open"></i>
+                </div>
+            </div>
+            <!-- Stat 3 -->
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>Aktif Rezervasyon</h3>
+                    <p class="stat-value" th:text="${myReservationsCount}">1</p>
+                </div>
+                <div class="stat-icon icon-purple">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </div>
+            </div>
+            <!-- Stat 4 -->
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>Toplam Borcum</h3>
+                    <p class="stat-value text-danger" th:text="${myFinesAmount}">20.00 ₺</p>
+                </div>
+                <div class="stat-icon icon-red">
+                    <i class="fa-solid fa-money-bill-wave"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Row -->
+        <div class="dashboard-row">
+            <!-- Left Card: Current Borrowings -->
+            <div class="card">
+                <div class="card-header">
+                    <span>Şu An Üzerimdeki Kitaplar</span>
+                    <a th:href="@{/odunc-islemleri/user}" href="odunc.html" style="font-size: 0.85rem; text-decoration: none; color: var(--primary);">Tümünü Gör</a>
+                </div>
+                <ul class="activity-list">
+                    <li class="activity-item">
+                        <div class="book-details">
+                            <div class="book-icon"><i class="fa-solid fa-book"></i></div>
+                            <div>
+                                <h4 class="book-name">Sefiller</h4>
+                                <p class="book-author">Victor Hugo</p>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge badge-success">Devam Ediyor</span>
+                            <p class="text-muted small m-0 mt-1">Son İade: 26.05.2026</p>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="book-details">
+                            <div class="book-icon" style="color: var(--danger); background-color: #fef2f2;"><i class="fa-solid fa-circle-exclamation"></i></div>
+                            <div>
+                                <h4 class="book-name">1984</h4>
+                                <p class="book-author">George Orwell</p>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge" style="background-color: #fee2e2; color: #b91c1c;">Gecikti</span>
+                            <p class="text-danger small m-0 mt-1" style="font-weight: 600;">Son İade: 15.05.2026</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Right Card: Active Reservations -->
+            <div class="card">
+                <div class="card-header">
+                    <span>Aktif Rezervasyonlarım</span>
+                </div>
+                <div class="reservation-item">
+                    <h5 class="book-name">Simyacı</h5>
+                    <p class="book-author">Paulo Coelho</p>
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <span class="badge badge-info">Sırada: 2. kişi</span>
+                        <span class="text-muted small">Tarih: 18.05.2026</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

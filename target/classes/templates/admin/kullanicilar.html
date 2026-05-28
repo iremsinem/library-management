@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Kullanıcılar - Library Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding: 0; }
+        .content-area { padding: 2rem; }
+        .badge-aktif { background: #dcfce7; color: #166534; border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 600; }
+        .badge-pasif { background: #fee2e2; color: #991b1b; border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 600; }
+        .badge-admin { background: #ede9fe; color: #5b21b6; border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 600; }
+        .badge-user { background: #e0f2fe; color: #075985; border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 600; }
+        .table-card { background: #fff; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+        .section-title { font-size: 1.3rem; font-weight: 700; color: #1e293b; }
+        .btn-icon { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 13px; border: none; cursor: pointer; transition: 0.2s; }
+        .avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; }
+        .modal-content { border-radius: 16px; border: none; }
+        .form-label { font-weight: 600; font-size: 13px; color: #475569; }
+        .form-control, .form-select { border-radius: 8px; border: 1px solid #e2e8f0; font-size: 14px; }
+        .form-control:focus, .form-select:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        th { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+        td { vertical-align: middle; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{admin/sidebar :: sidebar}"></div>
+
+<div class="content-area">
+    <div class="container-fluid">
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="fw-bold mb-1">Kullanıcı Yönetimi</h4>
+                <p class="text-muted mb-0" style="font-size:14px">Sistemdeki tüm kullanıcıları görüntüleyin ve yönetin.</p>
+            </div>
+            <button class="btn btn-primary px-4" style="border-radius:10px;font-weight:600" data-bs-toggle="modal" data-bs-target="#kullaniciEkleModal">
+                <i class="fa-solid fa-plus me-2"></i>Kullanıcı Ekle
+            </button>
+        </div>
+
+        <!-- İstatistik kartları -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="table-card p-3 d-flex align-items-center gap-3">
+                    <div style="width:44px;height:44px;background:#dbeafe;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#2563eb;font-size:1.2rem">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted" style="font-size:12px;font-weight:600">TOPLAM KULLANICI</div>
+                        <div style="font-size:1.5rem;font-weight:700" th:text="${#lists.size(kullanicilar)}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="table-card p-3 d-flex align-items-center gap-3">
+                    <div style="width:44px;height:44px;background:#dcfce7;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#16a34a;font-size:1.2rem">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted" style="font-size:12px;font-weight:600">AKTİF</div>
+                        <div style="font-size:1.5rem;font-weight:700" th:text="${#lists.size(kullanicilar.?[aktif == true])}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="table-card p-3 d-flex align-items-center gap-3">
+                    <div style="width:44px;height:44px;background:#fee2e2;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#dc2626;font-size:1.2rem">
+                        <i class="fa-solid fa-ban"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted" style="font-size:12px;font-weight:600">PASİF</div>
+                        <div style="font-size:1.5rem;font-weight:700" th:text="${#lists.size(kullanicilar.?[aktif == false])}">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="table-card p-3 d-flex align-items-center gap-3">
+                    <div style="width:44px;height:44px;background:#ede9fe;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#7c3aed;font-size:1.2rem">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted" style="font-size:12px;font-weight:600">ADMİN</div>
+                        <div style="font-size:1.5rem;font-weight:700" th:text="${#lists.size(kullanicilar.?[rol == 'ADMIN'])}">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kullanıcı Tablosu -->
+        <div class="table-card">
+            <div class="p-3 border-bottom d-flex align-items-center justify-content-between">
+                <span class="section-title">Kullanıcı Listesi</span>
+                <input type="text" id="searchInput" class="form-control" style="max-width:240px;font-size:13px" placeholder="İsim veya e-posta ara..." onkeyup="filterTable()">
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="kullaniciTable">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">#</th>
+                        <th>Kullanıcı</th>
+                        <th>E-posta</th>
+                        <th>Telefon</th>
+                        <th>Şifre</th>
+                        <th>Rol</th>
+                        <th>Durum</th>
+                        <th class="text-center">İşlemler</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="k : ${kullanicilar}">
+                        <td class="ps-4 text-muted" th:text="${k.id}">1</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="avatar" th:text="${#strings.substring(k.ad,0,1)}">A</div>
+                                <div>
+                                    <div class="fw-600" th:text="${k.adSoyad}">Ad Soyad</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td th:text="${k.email}">email@example.com</td>
+                        <td th:text="${k.telefon != null ? k.telefon : '-'}">-</td>
+                        <td>
+                            <!-- Şifre gizli gösterilir, admin göremez -->
+                            <span style="letter-spacing:2px;color:#94a3b8;font-size:16px">••••••••</span>
+                        </td>
+                        <td>
+                            <span th:if="${k.rol == 'ADMIN'}" class="badge-admin"><i class="fa-solid fa-shield-halved me-1"></i>Admin</span>
+                            <span th:unless="${k.rol == 'ADMIN'}" class="badge-user"><i class="fa-solid fa-user me-1"></i>Kullanıcı</span>
+                        </td>
+                        <td>
+                            <span th:if="${k.aktif}" class="badge-aktif"><i class="fa-solid fa-circle me-1" style="font-size:8px"></i>Aktif</span>
+                            <span th:unless="${k.aktif}" class="badge-pasif"><i class="fa-solid fa-circle me-1" style="font-size:8px"></i>Pasif</span>
+                        </td>
+                        <td class="text-center">
+                            <div class="d-flex gap-1 justify-content-center">
+                                <!-- Düzenle -->
+                                <a th:href="@{/admin/kullanicilar/duzenle/{id}(id=${k.id})}"
+                                   class="btn-icon" style="background:#f1f5f9;color:#3b82f6" title="Düzenle">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
+                                <!-- Durum Değiştir -->
+                                <a th:href="@{/admin/kullanicilar/durum/{id}(id=${k.id})}"
+                                   th:class="${k.aktif} ? 'btn-icon' : 'btn-icon'"
+                                   th:style="${k.aktif} ? 'background:#fee2e2;color:#dc2626' : 'background:#dcfce7;color:#16a34a'"
+                                   th:title="${k.aktif} ? 'Pasife Al' : 'Aktife Al'">
+                                    <i th:class="${k.aktif} ? 'fa-solid fa-ban' : 'fa-solid fa-circle-check'"></i>
+                                </a>
+                                <!-- Sil -->
+                                <a th:href="@{/admin/kullanicilar/delete/{id}(id=${k.id})}"
+                                   class="btn-icon" style="background:#fef2f2;color:#ef4444" title="Sil"
+                                   onclick="return confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(kullanicilar)}">
+                        <td colspan="8" class="text-center text-muted py-5">
+                            <i class="fa-solid fa-users-slash fa-2x mb-2 d-block"></i>
+                            Henüz kullanıcı bulunmuyor.
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Kullanıcı Ekle Modal -->
+<div class="modal fade" id="kullaniciEkleModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-user-plus me-2 text-primary"></i>Yeni Kullanıcı Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form th:action="@{/admin/kullanicilar/save}" method="post">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Ad *</label>
+                            <input type="text" name="ad" class="form-control" placeholder="Ad" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Soyad *</label>
+                            <input type="text" name="soyad" class="form-control" placeholder="Soyad" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">E-posta *</label>
+                            <input type="email" name="email" class="form-control" placeholder="ornek@email.com" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Şifre *</label>
+                            <div class="input-group">
+                                <input type="password" name="sifre" id="yeniSifre" class="form-control" placeholder="Şifre belirleyin" required>
+                                <button type="button" class="btn btn-outline-secondary" onclick="togglePass('yeniSifre',this)" style="border-radius:0 8px 8px 0">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Telefon</label>
+                            <input type="text" name="telefon" class="form-control" placeholder="0555 000 0000">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Rol *</label>
+                            <select name="rol" class="form-select" required>
+                                <option value="USER">Kullanıcı</option>
+                                <option value="ADMIN">Admin</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Adres</label>
+                            <textarea name="adres" class="form-control" rows="2" placeholder="Adres (isteğe bağlı)"></textarea>
+                        </div>
+                    </div>
+                    <div class="alert alert-info mt-3 mb-0" style="font-size:13px;border-radius:10px">
+                        <i class="fa-solid fa-circle-info me-2"></i>
+                        Admin panelinde kullanıcı şifrelerine erişim kısıtlıdır. Şifre yalnızca ilk kayıtta belirlenir.
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal" style="border-radius:8px">İptal</button>
+                    <button type="submit" class="btn btn-primary px-4" style="border-radius:8px;font-weight:600">
+                        <i class="fa-solid fa-save me-2"></i>Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Düzenleme modalı (duzenlemeModu aktifse aç) -->
+<div th:if="${duzenlemeModu}" class="modal fade" id="kullaniciDuzenleModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-pen me-2 text-warning"></i>Kullanıcıyı Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form th:action="@{/admin/kullanicilar/update/{id}(id=${kullanici.id})}" method="post">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Ad *</label>
+                            <input type="text" name="ad" class="form-control" th:value="${kullanici.ad}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Soyad *</label>
+                            <input type="text" name="soyad" class="form-control" th:value="${kullanici.soyad}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">E-posta *</label>
+                            <input type="email" name="email" class="form-control" th:value="${kullanici.email}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Yeni Şifre <small class="text-muted fw-normal">(boş bırakılırsa değişmez)</small></label>
+                            <div class="input-group">
+                                <input type="password" name="sifre" id="duzenleSifre" class="form-control" placeholder="Değiştirmek için girin">
+                                <button type="button" class="btn btn-outline-secondary" onclick="togglePass('duzenleSifre',this)" style="border-radius:0 8px 8px 0">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Telefon</label>
+                            <input type="text" name="telefon" class="form-control" th:value="${kullanici.telefon}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Rol *</label>
+                            <select name="rol" class="form-select" required>
+                                <option value="USER" th:selected="${kullanici.rol == 'USER'}">Kullanıcı</option>
+                                <option value="ADMIN" th:selected="${kullanici.rol == 'ADMIN'}">Admin</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Adres</label>
+                            <textarea name="adres" class="form-control" rows="2" th:text="${kullanici.adres}"></textarea>
+                        </div>
+                    </div>
+                    <div class="alert alert-warning mt-3 mb-0" style="font-size:13px;border-radius:10px">
+                        <i class="fa-solid fa-eye-slash me-2"></i>
+                        Güvenlik nedeniyle mevcut şifre gösterilmemektedir. Değiştirmek istemiyorsanız şifre alanını boş bırakın.
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <a href="/admin/kullanicilar" class="btn btn-light px-4" style="border-radius:8px">İptal</a>
+                    <button type="submit" class="btn btn-warning px-4" style="border-radius:8px;font-weight:600">
+                        <i class="fa-solid fa-save me-2"></i>Güncelle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Düzenleme modundaysa modal otomatik açılır
+    document.addEventListener('DOMContentLoaded', function () {
+        const editModal = document.getElementById('kullaniciDuzenleModal');
+        if (editModal) {
+            new bootstrap.Modal(editModal).show();
+        }
+    });
+
+    function togglePass(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const icon = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    }
+
+    function filterTable() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('#kullaniciTable tbody tr').forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    }
+</script>
+</body>
+</html>

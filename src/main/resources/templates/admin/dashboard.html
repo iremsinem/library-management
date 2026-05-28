@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Yönetim Paneli - Library Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 0; }
+        .card-stats { border: 1px solid rgba(226, 232, 240, 0.8); transition: all 0.3s ease; border-radius: 12px; }
+        .card-stats:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .content-area { padding: 2rem; }
+        .icon-box { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 1.5rem; }
+        .quick-action-btn { transition: all 0.2s; border-radius: 8px; font-weight: 500; display: flex; align-items: center; padding: 12px 16px; border: 1px solid #e2e8f0; background: #fff; text-decoration: none; color: #1e293b; margin-bottom: 12px; }
+        .quick-action-btn:hover { background: #f1f5f9; border-color: #cbd5e1; transform: translateX(4px); }
+        .quick-action-btn i { font-size: 1.2rem; width: 30px; }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{admin/sidebar :: sidebar}" id="sidebar" class="sidebar">
+    <!-- Statik önizleme için (Thymeleaf çalıştırılmadığında tarayıcının göreceği kod) -->
+    <div class="sidebar-header">
+        <h5 class="sidebar-title m-0">Library Admin</h5>
+        <button class="toggle-btn" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
+    </div>
+    <ul class="nav flex-column mt-3">
+        <li class="nav-item"><a th:href="@{/admin/dashboard}" href="dashboard.html" class="nav-link"><i class="fa-solid fa-chart-pie"></i><span class="sidebar-text">Dashboard</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-book"></i><span class="sidebar-text">Kitap Listeleri</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-users"></i><span class="sidebar-text">Kullanıcılar</span></a></li>
+        <li class="nav-item"><a th:href="@{/odunc-islemleri}" href="odunc.html" class="nav-link"><i class="fa-solid fa-hand-holding-hand"></i><span class="sidebar-text">Ödünç İşlemleri</span></a></li>
+        <li class="nav-item"><a th:href="@{/cezalar}" href="ceza.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i><span class="sidebar-text">Cezalar</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span class="sidebar-text">Rezervasyonlar</span></a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-gear"></i><span class="sidebar-text">Sistem Ayarları</span></a></li>
+    </ul>
+    <style>
+        .sidebar { width: 260px; background: #1e293b; color: #fff; min-height: 100vh; position: fixed; top: 0; left: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; overflow-y: auto; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
+        .sidebar.collapsed { width: 76px; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar.collapsed .sidebar-title { display: none; }
+        .sidebar .nav { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
+        .sidebar .nav-item { margin-bottom: 4px; }
+        .sidebar .nav-link { color: #cbd5e1; padding: 14px 24px; transition: 0.2s; white-space: nowrap; overflow: hidden; display: flex; align-items: center; text-decoration: none; font-size: 15px; font-weight: 500; }
+        .sidebar .nav-link:hover { color: #fff; background: rgba(255,255,255,0.1); border-left: 4px solid #3b82f6; padding-left: 20px; }
+        .sidebar .nav-link i { min-width: 32px; font-size: 1.25rem; text-align: center; margin-right: 12px; }
+        .sidebar.collapsed .nav-link i { margin-right: 0; }
+        .sidebar .sidebar-text { transition: opacity 0.3s; }
+        .sidebar.collapsed .sidebar-text { opacity: 0; display: none; }
+        .toggle-btn { background: transparent; color: #cbd5e1; border: none; font-size: 1.25rem; cursor: pointer; padding: 4px; border-radius: 4px; transition: 0.2s; }
+        .toggle-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+        .content-area { margin-left: 260px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); min-height: 100vh; }
+        .content-area.collapsed { margin-left: 76px; }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const contentArea = document.querySelector('.content-area');
+            const toggleBtn = document.getElementById('sidebarToggle');
+            
+            if(localStorage.getItem('sidebarCollapsed') === 'true') {
+                if(sidebar) sidebar.classList.add('collapsed');
+                if(contentArea) contentArea.classList.add('collapsed');
+            }
+
+            if(toggleBtn) {
+                toggleBtn.addEventListener('click', function() {
+                    if(sidebar) sidebar.classList.toggle('collapsed');
+                    if(contentArea) contentArea.classList.toggle('collapsed');
+                    if(sidebar) localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+                });
+            }
+        });
+    </script>
+</div>
+
+<div class="content-area">
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2 fw-bold text-dark m-0">Yönetim Paneli</h1>
+                <p class="text-muted m-0">Kütüphane sisteminin genel durumunu buradan takip edebilirsiniz.</p>
+            </div>
+        </div>
+
+        <!-- Stats Cards Grid -->
+        <div class="row g-4 mb-5">
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card card-stats shadow-sm bg-white p-3 border-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted fw-bold small">TOPLAM KİTAP</span>
+                            <h3 class="fw-bold mt-1 text-dark" th:text="${totalBooks ?: 68}">68</h3>
+                        </div>
+                        <div class="icon-box bg-primary bg-opacity-10 text-primary">
+                            <i class="fa-solid fa-book"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card card-stats shadow-sm bg-white p-3 border-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted fw-bold small">AKTİF ÖDÜNÇ</span>
+                            <h3 class="fw-bold mt-1 text-success" th:text="${activeBorrowings ?: 5}">5</h3>
+                        </div>
+                        <div class="icon-box bg-success bg-opacity-10 text-success">
+                            <i class="fa-solid fa-hand-holding-hand"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card card-stats shadow-sm bg-white p-3 border-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted fw-bold small">GECİKMİŞ İADE</span>
+                            <h3 class="fw-bold mt-1 text-danger" th:text="${overdueCount ?: 2}">2</h3>
+                        </div>
+                        <div class="icon-box bg-danger bg-opacity-10 text-danger">
+                            <i class="fa-solid fa-clock"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+                <div class="card card-stats shadow-sm bg-white p-3 border-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="text-muted fw-bold small">TOPLAM ÜYE</span>
+                            <h3 class="fw-bold mt-1 text-info" th:text="${totalUsers ?: 42}">42</h3>
+                        </div>
+                        <div class="icon-box bg-info bg-opacity-10 text-info">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Recent Activity Table -->
+            <div class="col-12 col-lg-8">
+                <div class="card shadow-sm border-0 rounded-3">
+                    <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="m-0 fw-bold text-dark">Son Ödünç İşlemleri</h5>
+                        <a th:href="@{/odunc-islemleri}" href="odunc.html" class="btn btn-sm btn-outline-primary">Tümünü Gör</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Kullanıcı</th>
+                                        <th>Kitap</th>
+                                        <th>Teslim Tarihi</th>
+                                        <th>Durum</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="odunc : ${recentBorrows}">
+                                        <td th:text="${odunc.kullaniciId}">Ahmet Yılmaz</td>
+                                        <td th:text="${odunc.kopyaId}">Simyacı</td>
+                                        <td th:text="${odunc.teslimTarihi}">2026-05-15</td>
+                                        <td>
+                                            <span class="badge" th:classappend="${odunc.durum == 'GECIKMIS' ? 'bg-danger' : 'bg-success'}" th:text="${odunc.durum == 'GECIKMIS' ? 'Gecikmiş' : 'Aktif'}">Aktif</span>
+                                        </td>
+                                    </tr>
+                                    <!-- Fallback row for static preview -->
+                                    <tr th:if="${#lists.isEmpty(recentBorrows)}">
+                                        <td>Mehmet Can</td>
+                                        <td>Nutuk</td>
+                                        <td>2026-06-01</td>
+                                        <td><span class="badge bg-success">Aktif</span></td>
+                                    </tr>
+                                    <tr th:if="${#lists.isEmpty(recentBorrows)}">
+                                        <td>Ayşe Demir</td>
+                                        <td>Sefiller</td>
+                                        <td>2026-05-10</td>
+                                        <td><span class="badge bg-danger">Gecikmiş</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions Panel -->
+            <div class="col-12 col-lg-4">
+                <div class="card shadow-sm border-0 rounded-3 h-100">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="m-0 fw-bold text-dark">Hızlı İşlemler</h5>
+                    </div>
+                    <div class="card-body">
+                        <a th:href="@{/odunc-islemleri}" href="odunc.html" class="quick-action-btn">
+                            <i class="fa-solid fa-hand-holding-hand text-primary"></i>
+                            <div>
+                                <div class="fw-bold">Ödünç Kitap Ver</div>
+                                <span class="text-muted small">Yeni bir ödünç kaydı açın</span>
+                            </div>
+                        </a>
+                        <a th:href="@{/odunc-islemleri}" href="odunc.html" class="quick-action-btn">
+                            <i class="fa-solid fa-reply text-success"></i>
+                            <div>
+                                <div class="fw-bold">İade İşlemi Yap</div>
+                                <span class="text-muted small">Kitap iadesi alın</span>
+                            </div>
+                        </a>
+                        <a th:href="@{/cezalar}" href="ceza.html" class="quick-action-btn">
+                            <i class="fa-solid fa-money-bill-wave text-danger"></i>
+                            <div>
+                                <div class="fw-bold">Cezaları Yönet</div>
+                                <span class="text-muted small">Gecikme cezalarını inceleyin</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
