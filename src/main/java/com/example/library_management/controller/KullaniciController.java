@@ -22,15 +22,7 @@ public class KullaniciController {
     public String listKullanicilar(Model model) {
         List<Kullanici> kullanicilar = kullaniciRepository.findAll();
         model.addAttribute("kullanicilar", kullanicilar);
-        model.addAttribute("yeniKullanici", new Kullanici());
         return "admin/kullanicilar";
-    }
-
-    @PostMapping("/save")
-    public String saveKullanici(@ModelAttribute("yeniKullanici") Kullanici kullanici) {
-        // Şifreyi düz metin olarak kaydediyoruz (gerçek projede BCrypt kullanılmalı)
-        kullaniciRepository.save(kullanici);
-        return "redirect:/admin/kullanicilar";
     }
 
     @GetMapping("/delete/{id}")
@@ -42,28 +34,36 @@ public class KullaniciController {
     @GetMapping("/durum/{id}")
     public String durumDegistir(@PathVariable int id) {
         Kullanici kullanici = kullaniciRepository.findById(id).orElse(null);
+
         if (kullanici != null) {
             kullanici.setAktif(!kullanici.isAktif());
             kullaniciRepository.save(kullanici);
         }
+
         return "redirect:/admin/kullanicilar";
     }
 
     @GetMapping("/duzenle/{id}")
     public String duzenleForm(@PathVariable int id, Model model) {
         Kullanici kullanici = kullaniciRepository.findById(id).orElse(null);
-        if (kullanici == null) return "redirect:/admin/kullanicilar";
+
+        if (kullanici == null) {
+            return "redirect:/admin/kullanicilar";
+        }
+
         model.addAttribute("kullanici", kullanici);
         model.addAttribute("kullanicilar", kullaniciRepository.findAll());
-        model.addAttribute("yeniKullanici", new Kullanici());
         model.addAttribute("duzenlemeModu", true);
+
         return "admin/kullanicilar";
     }
 
     @PostMapping("/update/{id}")
     public String updateKullanici(@PathVariable int id,
-                                   @ModelAttribute Kullanici form) {
+                                  @ModelAttribute Kullanici form) {
+
         Kullanici mevcut = kullaniciRepository.findById(id).orElse(null);
+
         if (mevcut != null) {
             mevcut.setAd(form.getAd());
             mevcut.setSoyad(form.getSoyad());
@@ -71,12 +71,10 @@ public class KullaniciController {
             mevcut.setTelefon(form.getTelefon());
             mevcut.setAdres(form.getAdres());
             mevcut.setRol(form.getRol());
-            // Şifre boş gönderilmişse eskisini koru
-            if (form.getSifre() != null && !form.getSifre().isBlank()) {
-                mevcut.setSifre(form.getSifre());
-            }
+
             kullaniciRepository.save(mevcut);
         }
+
         return "redirect:/admin/kullanicilar";
     }
 }

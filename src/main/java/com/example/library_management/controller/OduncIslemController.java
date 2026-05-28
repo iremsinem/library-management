@@ -1,63 +1,79 @@
 package com.example.library_management.controller;
 
+import com.example.library_management.model.Kullanici;
+import com.example.library_management.model.OduncIslemi;
+import com.example.library_management.repository.CezaRepository;
+import com.example.library_management.repository.OduncIslemRepository;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
-import com.example.library_management.model.OduncIslemi;
-import com.example.library_management.repository.OduncIslemRepository;
+import java.util.List;
 
 @Controller
 @RequestMapping("/odunc-islemleri")
 public class OduncIslemController {
 
     private final OduncIslemRepository repository;
+    private final CezaRepository cezaRepository;
 
-    // Bağımlılık enjeksiyonu için constructor (Hocanın tercih ettiği yöntem) [cite: 1371]
-    public OduncIslemController(OduncIslemRepository repository) {
+    public OduncIslemController(OduncIslemRepository repository,
+                                CezaRepository cezaRepository) {
         this.repository = repository;
+        this.cezaRepository = cezaRepository;
     }
 
-    // Tüm ödünç işlemlerini listeleme metodu [cite: 1372]
     @GetMapping
     public String listOduncIslemleri(Model model) {
-        // Veritabanındaki tüm kayıtları çekip "oduncler" ismiyle sayfaya gönderir [cite: 1373, 1374]
         model.addAttribute("oduncler", repository.findAll());
-
-        // Yeni bir boş nesne gönderir (Formda doldurulmak üzere)
         model.addAttribute("yeniOdunc", new OduncIslemi());
 
-        return "admin/odunc"; // "odunc-list" yerine yeni yol
+        return "admin/odunc";
     }
 
-    // Yeni ödünç işlemi kaydetme metodu [cite: 1392]
     @PostMapping("/save")
     public String saveOduncIslemi(@ModelAttribute("yeniOdunc") OduncIslemi oduncIslemi) {
-        // Formdan gelen verileri veritabanına kaydeder [cite: 1393, 1394]
         repository.save(oduncIslemi);
-
-        // İşlem bitince tekrar listeleme sayfasına yönlendirir [cite: 1395]
         return "redirect:/odunc-islemleri";
     }
 
-    // Bir ödünç işlemini silme metodu [cite: 1403]
     @GetMapping("/delete/{id}")
     public String deleteOduncIslemi(@PathVariable int id) {
-        // Belirtilen ID'ye sahip kaydı siler [cite: 1404, 1405]
         repository.deleteById(id);
-
-        // Listeleme sayfasına geri döner [cite: 1414]
         return "redirect:/odunc-islemleri";
     }
 
-    // Kullanıcıya özel ödünç listeleme sayfası
     @GetMapping("/user")
-    public String listUserOduncIslemleri(Model model) {
-        model.addAttribute("oduncler", repository.findAll());
+    public String listUserOduncIslemleri(HttpSession session, Model model) {
+
+        Kullanici aktifKullanici = (Kullanici) session.getAttribute("aktifKullanici");
+
+        if (aktifKullanici == null) {
+            return "redirect:/login";
+        }
+
+        int kullaniciId = aktifKullanici.getId();
+
+        List<OduncIslemi> devamEdenler = repository.findAll().stream()
+                .filter(o -> o.getKullaniciId() == kullaniciId)
+                .filter(o -> o.getDurum() != null &&
+                        (o.getDurum().equals("DEVAM_EDIYOR") || o.getDurum().equals("GECIKMIS")))
+                .toList();
+
+        List<OduncIslemi> gecmisIslemler = repository.findAll().stream()
+                .filter(o -> o.getKullaniciId() == kullaniciId)
+                .filter(o -> o.getDurum() != null && o.getDurum().equals("TESLIM_EDILDI"))
+                .toList();
+
+        var cezalar = cezaRepository.findAll().stream()
+                .filter(c -> c.getKullaniciId() == kullaniciId)
+                .toList();
+
+        model.addAttribute("devamEdenler", devamEdenler);
+        model.addAttribute("gecmisIslemler", gecmisIslemler);
+        model.addAttribute("cezalar", cezalar);
+
         return "user/odunc";
     }
 }

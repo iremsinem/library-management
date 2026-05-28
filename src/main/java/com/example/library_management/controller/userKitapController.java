@@ -6,6 +6,7 @@ import com.example.library_management.model.Rezervasyonlar;
 import com.example.library_management.repository.KitaplarRepository;
 import com.example.library_management.repository.KullaniciRepository;
 import com.example.library_management.repository.RezervasyonlarRepository;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +33,14 @@ public class userKitapController {
 
     @GetMapping("/kitap-ara")
     public String kitapAra(@RequestParam(required = false) String keyword,
+                           HttpSession session,
                            Model model) {
+
+        Kullanici aktifKullanici = (Kullanici) session.getAttribute("aktifKullanici");
+
+        if (aktifKullanici == null) {
+            return "redirect:/login";
+        }
 
         List<Kitaplar> kitaplar;
 
@@ -57,11 +65,16 @@ public class userKitapController {
     }
 
     @PostMapping("/rezervasyon-yap/{kitapId}")
-    public String rezervasyonYap(@PathVariable int kitapId) {
+    public String rezervasyonYap(@PathVariable int kitapId,
+                                 HttpSession session) {
 
-        int aktifKullaniciId = 2;
+        Kullanici aktifKullanici = (Kullanici) session.getAttribute("aktifKullanici");
 
-        Kullanici kullanici = kullaniciRepository.findById(aktifKullaniciId).orElse(null);
+        if (aktifKullanici == null) {
+            return "redirect:/login";
+        }
+
+        Kullanici kullanici = kullaniciRepository.findById(aktifKullanici.getId()).orElse(null);
         Kitaplar kitap = kitaplarRepository.findById(kitapId).orElse(null);
 
         if (kullanici == null || kitap == null) {
@@ -98,12 +111,17 @@ public class userKitapController {
     }
 
     @GetMapping("/rezervasyonlar")
-    public String userRezervasyonlar(Model model) {
+    public String userRezervasyonlar(HttpSession session,
+                                     Model model) {
 
-        int aktifKullaniciId = 2;
+        Kullanici aktifKullanici = (Kullanici) session.getAttribute("aktifKullanici");
+
+        if (aktifKullanici == null) {
+            return "redirect:/login";
+        }
 
         List<Rezervasyonlar> rezervasyonlar =
-                rezervasyonlarRepository.findByKullaniciId(aktifKullaniciId);
+                rezervasyonlarRepository.findByKullaniciId(aktifKullanici.getId());
 
         model.addAttribute("rezervasyonlar", rezervasyonlar);
 
@@ -111,15 +129,20 @@ public class userKitapController {
     }
 
     @GetMapping("/rezervasyon-iptal/{id}")
-    public String userRezervasyonIptal(@PathVariable int id) {
+    public String userRezervasyonIptal(@PathVariable int id,
+                                       HttpSession session) {
 
-        int aktifKullaniciId = 2;
+        Kullanici aktifKullanici = (Kullanici) session.getAttribute("aktifKullanici");
+
+        if (aktifKullanici == null) {
+            return "redirect:/login";
+        }
 
         Rezervasyonlar rezervasyon = rezervasyonlarRepository.findById(id).orElse(null);
 
         if (rezervasyon != null
                 && rezervasyon.getKullanici() != null
-                && rezervasyon.getKullanici().getId() == aktifKullaniciId
+                && rezervasyon.getKullanici().getId() == aktifKullanici.getId()
                 && "BEKLEMEDE".equals(rezervasyon.getDurum())) {
 
             rezervasyon.setDurum("IPTAL");

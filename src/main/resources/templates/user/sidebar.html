@@ -41,6 +41,13 @@
                 <span class="sidebar-text">Hesap Ayarları</span>
             </a>
         </li>
+
+        <li class="nav-item">
+            <a th:href="@{/logout}" class="nav-link logout-link">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span class="sidebar-text">Çıkış Yap</span>
+            </a>
+        </li>
     </ul>
 
     <style>
@@ -58,6 +65,18 @@
         .sidebar.collapsed .sidebar-text { opacity: 0; display: none; }
         .toggle-btn { background: transparent; color: #cbd5e1; border: none; font-size: 1.25rem; cursor: pointer; padding: 4px; border-radius: 4px; transition: 0.2s; }
         .toggle-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
+
+        .sidebar .nav-link.logout-link {
+            color: #ef4444 !important;
+        }
+
+        .sidebar .nav-link.logout-link:hover {
+            color: #fff !important;
+            background: rgba(239, 68, 68, 0.15);
+            border-left: 4px solid #ef4444;
+            padding-left: 20px;
+        }
+
         .content-area { margin-left: 260px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); min-height: 100vh; padding: 2rem; }
         .content-area.collapsed { margin-left: 76px; }
     </style>

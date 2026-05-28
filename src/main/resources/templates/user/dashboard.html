@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kullanıcı Paneli - Dashboard</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         :root {
             --bg-color: #f8fafc;
@@ -13,11 +15,9 @@
             --text-muted: #64748b;
             --card-bg: #ffffff;
             --primary: #4f46e5;
-            --primary-hover: #4338ca;
             --success: #10b981;
             --danger: #ef4444;
             --border: #e2e8f0;
-            --row-hover: #f1f5f9;
         }
 
         body {
@@ -28,12 +28,22 @@
             padding: 0;
         }
 
+        .content-area {
+            margin-left: 260px;
+            transition: all 0.3s;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .content-area.collapsed {
+            margin-left: 76px;
+        }
+
         .container {
             max-width: 1100px;
             margin: 0 auto;
         }
 
-        /* Welcome Card */
         .welcome-card {
             background: linear-gradient(135deg, #4f46e5 0%, #312e81 100%);
             border-radius: 20px;
@@ -69,7 +79,6 @@
             margin: 0;
         }
 
-        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -86,12 +95,6 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.1);
         }
 
         .stat-info h3 {
@@ -124,7 +127,6 @@
         .icon-red { background-color: #fef2f2; color: #ef4444; }
         .icon-purple { background-color: #faf5ff; color: #a855f7; }
 
-        /* Dashboard Content Row */
         .dashboard-row {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -157,7 +159,6 @@
             padding-bottom: 0.75rem;
         }
 
-        /* Custom List Styling */
         .activity-list {
             list-style: none;
             padding: 0;
@@ -195,7 +196,7 @@
         }
 
         .book-name {
-            font-weight: 500;
+            font-weight: 600;
             font-size: 0.95rem;
             margin: 0;
         }
@@ -214,10 +215,9 @@
         }
 
         .badge-success { background-color: #d1fae5; color: #065f46; }
-        .badge-warning { background-color: #fef3c7; color: #92400e; }
+        .badge-warning { background-color: #fee2e2; color: #b91c1c; }
         .badge-info { background-color: #e0f2fe; color: #075985; }
 
-        /* Quick reservation list */
         .reservation-item {
             display: flex;
             flex-direction: column;
@@ -229,108 +229,67 @@
         .reservation-item:last-child {
             border-bottom: none;
         }
+
+        .empty-message {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 1rem 0;
+            text-align: center;
+        }
     </style>
 </head>
+
 <body>
 
-<div th:replace="~{user/sidebar :: sidebar}" id="sidebar" class="sidebar">
-    <!-- Statik önizleme için (Thymeleaf çalıştırılmadığında tarayıcının göreceği kod) -->
-    <div class="sidebar-header">
-        <h5 class="sidebar-title m-0">Library User</h5>
-        <button class="toggle-btn" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
-    </div>
-    <ul class="nav flex-column mt-3">
-        <li class="nav-item"><a th:href="@{/user/dashboard}" href="dashboard.html" class="nav-link"><i class="fa-solid fa-chart-pie"></i><span class="sidebar-text">Dashboard</span></a></li>
-        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-book"></i><span class="sidebar-text">Kitaplarım</span></a></li>
-        <li class="nav-item"><a th:href="@{/odunc-islemleri/user}" href="odunc.html" class="nav-link"><i class="fa-solid fa-credit-card"></i><span class="sidebar-text">Ceza Ödeme</span></a></li>
-        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span class="sidebar-text">Rezervasyonlar</span></a></li>
-        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-user-gear"></i><span class="sidebar-text">Hesap Ayarları</span></a></li>
-    </ul>
-    <style>
-        .sidebar { width: 260px; background: #0f172a; color: #fff; min-height: 100vh; position: fixed; top: 0; left: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; overflow-y: auto; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
-        .sidebar.collapsed { width: 76px; }
-        .sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .sidebar.collapsed .sidebar-title { display: none; }
-        .sidebar .nav { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
-        .sidebar .nav-item { margin-bottom: 4px; }
-        .sidebar .nav-link { color: #cbd5e1; padding: 14px 24px; transition: 0.2s; white-space: nowrap; overflow: hidden; display: flex; align-items: center; text-decoration: none; font-size: 15px; font-weight: 500; }
-        .sidebar .nav-link:hover { color: #fff; background: rgba(255,255,255,0.1); border-left: 4px solid #4f46e5; padding-left: 20px; }
-        .sidebar .nav-link i { min-width: 32px; font-size: 1.25rem; text-align: center; margin-right: 12px; }
-        .sidebar.collapsed .nav-link i { margin-right: 0; }
-        .sidebar .sidebar-text { transition: opacity 0.3s; }
-        .sidebar.collapsed .sidebar-text { opacity: 0; display: none; }
-        .toggle-btn { background: transparent; color: #cbd5e1; border: none; font-size: 1.25rem; cursor: pointer; padding: 4px; border-radius: 4px; transition: 0.2s; }
-        .toggle-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
-        .content-area { margin-left: 260px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); min-height: 100vh; padding: 2rem; }
-        .content-area.collapsed { margin-left: 76px; }
-    </style>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const contentArea = document.querySelector('.content-area');
-            const toggleBtn = document.getElementById('sidebarToggle');
-            
-            if(localStorage.getItem('sidebarCollapsed') === 'true') {
-                sidebar.classList.add('collapsed');
-                if(contentArea) contentArea.classList.add('collapsed');
-            }
-
-            if(toggleBtn) {
-                toggleBtn.addEventListener('click', function() {
-                    sidebar.classList.toggle('collapsed');
-                    if(contentArea) contentArea.classList.toggle('collapsed');
-                    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-                });
-            }
-        });
-    </script>
-</div>
+<div th:replace="~{user/sidebar :: sidebar}"></div>
 
 <div class="content-area">
     <div class="container">
-        <!-- Welcome Section -->
+
         <div class="welcome-card">
-            <h1 class="welcome-title">Hoş Geldiniz!</h1>
-            <p class="welcome-subtitle">Kütüphane hesabınızın durumunu ve ödünç işlemlerinizi buradan takip edebilirsiniz.</p>
+            <h1 class="welcome-title">
+                Hoş Geldiniz, <span th:text="${kullanici.ad}">Kullanıcı</span>!
+            </h1>
+            <p class="welcome-subtitle">
+                Kütüphane hesabınızın durumunu ve ödünç işlemlerinizi buradan takip edebilirsiniz.
+            </p>
         </div>
 
-        <!-- Stats Grid -->
         <div class="stats-grid">
-            <!-- Stat 1 -->
             <div class="stat-card">
                 <div class="stat-info">
                     <h3>Okuduğum Kitaplar</h3>
-                    <p class="stat-value" th:text="${myReadCount}">14</p>
+                    <p class="stat-value" th:text="${myReadCount}">0</p>
                 </div>
                 <div class="stat-icon icon-green">
                     <i class="fa-solid fa-square-check"></i>
                 </div>
             </div>
-            <!-- Stat 2 -->
+
             <div class="stat-card">
                 <div class="stat-info">
                     <h3>Şu An Üzerimdeki</h3>
-                    <p class="stat-value" th:text="${myActiveCount}">2</p>
+                    <p class="stat-value" th:text="${myActiveCount}">0</p>
                 </div>
                 <div class="stat-icon icon-blue">
                     <i class="fa-solid fa-book-open"></i>
                 </div>
             </div>
-            <!-- Stat 3 -->
+
             <div class="stat-card">
                 <div class="stat-info">
                     <h3>Aktif Rezervasyon</h3>
-                    <p class="stat-value" th:text="${myReservationsCount}">1</p>
+                    <p class="stat-value" th:text="${myReservationsCount}">0</p>
                 </div>
                 <div class="stat-icon icon-purple">
                     <i class="fa-solid fa-calendar-check"></i>
                 </div>
             </div>
-            <!-- Stat 4 -->
+
             <div class="stat-card">
                 <div class="stat-info">
                     <h3>Toplam Borcum</h3>
-                    <p class="stat-value text-danger" th:text="${myFinesAmount}">20.00 ₺</p>
+                    <p class="stat-value" style="color: var(--danger)" th:text="${myFinesAmount}">0.00 ₺</p>
                 </div>
                 <div class="stat-icon icon-red">
                     <i class="fa-solid fa-money-bill-wave"></i>
@@ -338,59 +297,99 @@
             </div>
         </div>
 
-        <!-- Details Row -->
         <div class="dashboard-row">
-            <!-- Left Card: Current Borrowings -->
+
             <div class="card">
                 <div class="card-header">
                     <span>Şu An Üzerimdeki Kitaplar</span>
-                    <a th:href="@{/odunc-islemleri/user}" href="odunc.html" style="font-size: 0.85rem; text-decoration: none; color: var(--primary);">Tümünü Gör</a>
+                    <a th:href="@{/odunc-islemleri/user}"
+                       style="font-size: 0.85rem; text-decoration: none; color: var(--primary);">
+                        Tümünü Gör
+                    </a>
                 </div>
-                <ul class="activity-list">
-                    <li class="activity-item">
+
+                <ul class="activity-list" th:if="${currentBooks != null and !#lists.isEmpty(currentBooks)}">
+                    <li class="activity-item" th:each="book : ${currentBooks}">
                         <div class="book-details">
-                            <div class="book-icon"><i class="fa-solid fa-book"></i></div>
+                            <div class="book-icon"
+                                 th:style="${book.durum == 'GECIKMIS'} ? 'color: var(--danger); background-color: #fef2f2;' : ''">
+                                <i th:class="${book.durum == 'GECIKMIS'} ? 'fa-solid fa-circle-exclamation' : 'fa-solid fa-book'"></i>
+                            </div>
+
                             <div>
-                                <h4 class="book-name">Sefiller</h4>
-                                <p class="book-author">Victor Hugo</p>
+                                <h4 class="book-name" th:text="${book.baslik}">Kitap Adı</h4>
+                                <p class="book-author" th:text="${book.yazar}">Yazar</p>
                             </div>
                         </div>
-                        <div class="text-end">
-                            <span class="badge badge-success">Devam Ediyor</span>
-                            <p class="text-muted small m-0 mt-1">Son İade: 26.05.2026</p>
-                        </div>
-                    </li>
-                    <li class="activity-item">
-                        <div class="book-details">
-                            <div class="book-icon" style="color: var(--danger); background-color: #fef2f2;"><i class="fa-solid fa-circle-exclamation"></i></div>
-                            <div>
-                                <h4 class="book-name">1984</h4>
-                                <p class="book-author">George Orwell</p>
-                            </div>
-                        </div>
-                        <div class="text-end">
-                            <span class="badge" style="background-color: #fee2e2; color: #b91c1c;">Gecikti</span>
-                            <p class="text-danger small m-0 mt-1" style="font-weight: 600;">Son İade: 15.05.2026</p>
+
+                        <div style="text-align:right">
+                            <span th:if="${book.durum == 'GECIKMIS'}"
+                                  class="badge badge-warning">
+                                Gecikti
+                            </span>
+
+                            <span th:unless="${book.durum == 'GECIKMIS'}"
+                                  class="badge badge-success">
+                                Devam Ediyor
+                            </span>
+
+                            <p th:if="${book.durum == 'GECIKMIS'}"
+                               style="color: var(--danger); font-size:0.8rem; margin:4px 0 0 0; font-weight:600"
+                               th:text="'Son İade: ' + ${book.teslimTarihi}">
+                                Son İade
+                            </p>
+
+                            <p th:unless="${book.durum == 'GECIKMIS'}"
+                               style="color: var(--text-muted); font-size:0.8rem; margin:4px 0 0 0"
+                               th:text="'Son İade: ' + ${book.teslimTarihi}">
+                                Son İade
+                            </p>
                         </div>
                     </li>
                 </ul>
+
+                <div class="empty-message" th:if="${currentBooks == null or #lists.isEmpty(currentBooks)}">
+                    <i class="fa-solid fa-circle-info me-1"></i>
+                    Şu anda üzerinizde kitap bulunmuyor.
+                </div>
             </div>
 
-            <!-- Right Card: Active Reservations -->
             <div class="card">
                 <div class="card-header">
                     <span>Aktif Rezervasyonlarım</span>
                 </div>
-                <div class="reservation-item">
-                    <h5 class="book-name">Simyacı</h5>
-                    <p class="book-author">Paulo Coelho</p>
-                    <div class="d-flex justify-content-between align-items-center mt-2">
-                        <span class="badge badge-info">Sırada: 2. kişi</span>
-                        <span class="text-muted small">Tarih: 18.05.2026</span>
+
+                <div th:if="${activeReservations != null and !#lists.isEmpty(activeReservations)}">
+                    <div class="reservation-item" th:each="r : ${activeReservations}">
+                        <h5 class="book-name" th:text="${r.kitap != null ? r.kitap.baslik : 'Bilinmeyen Kitap'}">
+                            Kitap Adı
+                        </h5>
+
+                        <p class="book-author"
+                           th:text="${r.kitap != null && r.kitap.yazar != null ? r.kitap.yazar.ad + ' ' + r.kitap.yazar.soyad : '-'}">
+                            Yazar
+                        </p>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem">
+                            <span class="badge badge-info" th:text="${r.durum}">
+                                BEKLEMEDE
+                            </span>
+
+                            <span class="book-author" th:text="'Tarih: ' + ${r.rezervasyonTarihi}">
+                                Tarih
+                            </span>
+                        </div>
                     </div>
                 </div>
+
+                <div class="empty-message" th:if="${activeReservations == null or #lists.isEmpty(activeReservations)}">
+                    <i class="fa-solid fa-calendar-xmark me-1"></i>
+                    Aktif rezervasyonunuz bulunmuyor.
+                </div>
             </div>
+
         </div>
+
     </div>
 </div>
 
