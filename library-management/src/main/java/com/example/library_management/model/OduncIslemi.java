@@ -14,7 +14,7 @@ public class OduncIslemi {
     public static final double GUNLUK_CEZA_UCRETI = 10.00;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // [cite: 1253, 1254, 1255]
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private int id;
 
@@ -42,9 +42,12 @@ public class OduncIslemi {
     @Column(name = "kitap_durumu")
     private String kitapDurumu;
 
-    // Arayüzde göstermek için kullanılan, veritabanında olmayan alanlar
+
     @Transient
     private String kitapBaslik;
+
+    @Transient
+    private String kitapYazari;
 
     @Transient
     private String kullaniciAdi;
@@ -52,11 +55,14 @@ public class OduncIslemi {
     @Transient
     private String barkod;
 
-    // 1. Varsayılan Constructor (Hocanın örneğindeki public Student() gibi) [cite: 1280]
+    @Transient
+    private Integer kitapStok;
+
+
     public OduncIslemi() {
     }
 
-    // 2. Tüm alanları içeren Constructor (Hocanın sayfa 31'deki id'li constructor'ı gibi) [cite: 1290]
+
     public OduncIslemi(int id, int kopyaId, int kullaniciId, LocalDate verilisTarihi,
                        LocalDate teslimTarihi, LocalDate gercekTeslimTarihi, String durum) {
         this.id = id;
@@ -68,7 +74,7 @@ public class OduncIslemi {
         this.durum = durum;
     }
 
-    // 3. ID hariç Constructor (Yeni kayıtlar için hocanın kullandığı yapı) [cite: 1303]
+
     public OduncIslemi(int kopyaId, int kullaniciId, LocalDate verilisTarihi,
                        LocalDate teslimTarihi, String durum) {
         this.kopyaId = kopyaId;
@@ -78,7 +84,7 @@ public class OduncIslemi {
         this.durum = durum;
     }
 
-    // Hesaplama Mantığı
+
     public long gecikmeGunSayisi() {
         LocalDate teslim = (gercekTeslimTarihi != null) ? gercekTeslimTarihi : LocalDate.now();
         if (teslimTarihi != null && teslim.isAfter(teslimTarihi)) {
@@ -87,11 +93,16 @@ public class OduncIslemi {
         return 0;
     }
 
+    public long kalanGunSayisi() {
+        if (teslimTarihi == null) return 0;
+        return ChronoUnit.DAYS.between(LocalDate.now(), teslimTarihi);
+    }
+
     public double cezaTutari() {
         return gecikmeGunSayisi() * GUNLUK_CEZA_UCRETI;
     }
 
-    // Getter ve Setter Metotları (Hocanın sayfa 31'deki sıralamasıyla aynı yapıda) [cite: 1313, 1314, 1326]
+
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
@@ -116,6 +127,9 @@ public class OduncIslemi {
     public String getKitapBaslik() { return kitapBaslik; }
     public void setKitapBaslik(String kitapBaslik) { this.kitapBaslik = kitapBaslik; }
 
+    public String getKitapYazari() { return kitapYazari; }
+    public void setKitapYazari(String kitapYazari) { this.kitapYazari = kitapYazari; }
+
     public String getKullaniciAdi() { return kullaniciAdi; }
     public void setKullaniciAdi(String kullaniciAdi) { this.kullaniciAdi = kullaniciAdi; }
 
@@ -127,6 +141,9 @@ public class OduncIslemi {
 
     public String getKitapDurumu() { return kitapDurumu; }
     public void setKitapDurumu(String kitapDurumu) { this.kitapDurumu = kitapDurumu; }
+
+    public Integer getKitapStok() { return kitapStok; }
+    public void setKitapStok(Integer kitapStok) { this.kitapStok = kitapStok; }
 
     @Override
     public String toString() {

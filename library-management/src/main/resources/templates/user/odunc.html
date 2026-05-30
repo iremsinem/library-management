@@ -1,12 +1,63 @@
 <!DOCTYPE html>
 <html lang="tr" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ödünç İşlemlerim - Kullanıcı Paneli</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* GLASSMORPHISM GLOBAL OVERRIDES */
+        body { 
+            font-family: 'Inter', sans-serif !important; 
+            background: radial-gradient(circle at top left, #e0e7ff, transparent 50%),
+                        radial-gradient(circle at top right, #fbcfe8, transparent 50%),
+                        radial-gradient(circle at bottom left, #cffafe, transparent 50%),
+                        radial-gradient(circle at bottom right, #ede9fe, transparent 50%) !important;
+            background-color: #f8fafc !important;
+            background-attachment: fixed !important;
+            color: #1e293b; 
+            min-height: 100vh;
+        }
+        
+        .card-stats, .stat-card, .dashboard-card { 
+            background: rgba(255, 255, 255, 0.6) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.9) !important; 
+            border-radius: 24px !important;
+            transition: all 0.3s ease !important; 
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05) !important;
+        }
+        .card-stats:hover, .stat-card:hover { transform: translateY(-5px) !important; box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important; }
+        
+        .modern-card, .card { 
+            border-radius: 24px !important; 
+            overflow: hidden !important; 
+            border: 1px solid rgba(255, 255, 255, 0.8) !important; 
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05) !important; 
+            background: rgba(255, 255, 255, 0.6) !important; 
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+        }
+        
+        .modern-card .card-header, .card-header {
+            background: rgba(255, 255, 255, 0.4) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5) !important;
+        }
+        
+        .modern-card .card-body, .card-body { background: transparent !important; }
+        
+        .table { background: transparent !important; }
+        .table thead th { background: rgba(255, 255, 255, 0.5) !important; border-bottom: 1px solid rgba(255, 255, 255, 0.8) !important; color: #475569 !important; font-weight: 600 !important; text-transform: uppercase !important; font-size: 0.8rem !important; letter-spacing: 0.05em !important; }
+        .table tbody tr { background: transparent !important; transition: all 0.2s !important; }
+        .table tbody tr:hover { background: rgba(255, 255, 255, 0.8) !important; }
+        .table tbody td { border-bottom: 1px solid rgba(255, 255, 255, 0.5) !important; vertical-align: middle !important; }
+        
+        .form-control, .form-select { border-radius: 12px !important; border: 1px solid rgba(255, 255, 255, 0.8) !important; background: rgba(255, 255, 255, 0.7) !important; font-size: 14px !important; }
+        .form-control:focus, .form-select:focus { border-color: #4f46e5 !important; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important; background: #fff !important; }
+
         :root {
             --bg-color: #f8fafc;
             --text-main: #0f172a;
@@ -611,83 +662,93 @@
             <p class="subtitle">Kitap ödünç alma geçmişinizi ve cezalarınızı bu alandan yönetebilirsiniz.</p>
         </div>
         
+        <!-- Bilgi Kartları -->
+        <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem;">
+            <div style="flex: 1; background-color: var(--card-bg); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <h3 style="margin: 0; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Devam Eden Kitaplar</h3>
+                    <p id="infoDevamEden" style="margin: 0.5rem 0 0 0; font-size: 1.75rem; font-weight: 700; color: #1e40af;">0</p>
+                </div>
+                <div style="width: 48px; height: 48px; border-radius: 50%; background-color: #dbeafe; display: flex; align-items: center; justify-content: center; color: #1e40af;">
+                    <i class="fa-solid fa-book-open" style="font-size: 1.25rem;"></i>
+                </div>
+            </div>
+            <div style="flex: 1; background-color: var(--card-bg); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <h3 style="margin: 0; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Geciken Kitaplar</h3>
+                    <p id="infoGeciken" style="margin: 0.5rem 0 0 0; font-size: 1.75rem; font-weight: 700; color: #b91c1c;">0</p>
+                </div>
+                <div style="width: 48px; height: 48px; border-radius: 50%; background-color: #fee2e2; display: flex; align-items: center; justify-content: center; color: #b91c1c;">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.25rem;"></i>
+                </div>
+            </div>
+        </div>
+
         <!-- Ödünç Listesi Kartı -->
         <div class="card">
             <div class="card-title">Kitap Listem</div>
             
-            <div class="tabs-container">
-                <button class="tab-btn active" data-target="tab-devam">Devam Edenler</button>
-                <button class="tab-btn" data-target="tab-gecmis">Geçmiş İşlemler</button>
-            </div>
+            <div class="toolbar" style="justify-content: space-between; gap: 1rem; align-items: center; margin-top: 0; margin-bottom: 1.5rem;">
+                    <div class="btn-group" role="group" aria-label="Filtreleme">
+                        <input type="radio" class="btn-check status-filter" name="statusFilter" value="Tümü" id="filterAll" autocomplete="off" checked>
+                        <label class="btn btn-outline-secondary" for="filterAll">Tümü</label>
 
-            <!-- Devam Edenler Tablosu -->
-            <div id="tab-devam" class="tab-content active">
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Kitap Adı</th>
-                                <th>Yazar</th>
-                                <th>Alış Tarihi</th>
-                                <th>Son İade Tarihi</th>
-                                <th>Kalan Gün</th>
-                                <th>Durum</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Örnek veriler -->
-                            <tr>
-                                <td><span style="font-weight: 500;">Sefiller</span></td>
-                                <td>Victor Hugo</td>
-                                <td>12.05.2026</td>
-                                <td>26.05.2026</td>
-                                <td>11 Gün</td>
-                                <td><span class="status-badge status-active">Devam Ediyor</span></td>
-                            </tr>
-                            <tr>
-                                <td><span style="font-weight: 500;">1984</span></td>
-                                <td>George Orwell</td>
-                                <td>01.05.2026</td>
-                                <td>15.05.2026</td>
-                                <td style="color: var(--danger); font-weight: 600;">Geçti</td>
-                                <td><span class="status-badge status-overdue">Gecikti</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                        <input type="radio" class="btn-check status-filter" name="statusFilter" value="Devam Edenler" id="filterDevam" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="filterDevam">Devam Edenler</label>
+
+                        <input type="radio" class="btn-check status-filter" name="statusFilter" value="Gecikenler" id="filterGecikti" autocomplete="off">
+                        <label class="btn btn-outline-danger" for="filterGecikti">Gecikenler</label>
+
+                        <input type="radio" class="btn-check status-filter" name="statusFilter" value="İade Edilenler" id="filterIade" autocomplete="off">
+                        <label class="btn btn-outline-success" for="filterIade">İade Edilenler</label>
+                    </div>
+                <div style="display: flex; gap: 10px; flex: 1; justify-content: flex-end;">
+                    <input type="text" id="oduncSearchInput" class="form-control" placeholder="Kitap veya Yazar ara..." style="max-width: 300px; padding: 0.5rem; border-radius: 6px; border: 1px solid #ccc;">
+                    <select id="oduncSortSelect" class="form-select" style="max-width: 250px; padding: 0.5rem; border-radius: 6px; border: 1px solid #ccc;">
+                        <option value="default">Sıralama (Varsayılan)</option>
+                        <option value="az_kitap">Kitap (A-Z)</option>
+                        <option value="za_kitap">Kitap (Z-A)</option>
+                        <option value="tarih_yeni">Alış Tarihi (En Yeni)</option>
+                        <option value="tarih_eski">Alış Tarihi (En Eski)</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- Geçmiş İşlemler Tablosu -->
-            <div id="tab-gecmis" class="tab-content">
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Kitap Adı</th>
-                                <th>Yazar</th>
-                                <th>Alış Tarihi</th>
-                                <th>İade Tarihi</th>
-                                <th>Durum</th>
-                            </tr>
-                        </thead>
-                        <tbody id="gecmisBody">
-                            <tr>
-                                <td><span style="font-weight: 500;">Suç ve Ceza</span></td>
-                                <td>Dostoyevski</td>
-                                <td>10.04.2026</td>
-                                <td>24.04.2026</td>
-                                <td><span class="status-badge status-returned">İade Edildi</span></td>
-                            </tr>
-                            <tr>
-                                <td><span style="font-weight: 500;">Simyacı</span></td>
-                                <td>Paulo Coelho</td>
-                                <td>01.03.2026</td>
-                                <td>12.03.2026</td>
-                                <td><span class="status-badge status-returned">İade Edildi</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="table-container">
+                <table id="userOduncTable">
+                    <thead>
+                        <tr>
+                            <th>Kitap Adı</th>
+                            <th>Yazar</th>
+                            <th>Alış Tarihi</th>
+                            <th>İade/Son İade Tarihi</th>
+                            <th>Kalan Gün</th>
+                            <th>Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userOduncBody">
+                        <tr th:each="odunc : ${oduncler}" class="odunc-row">
+                            <td><span style="font-weight: 500;" th:text="${odunc.kitapBaslik != null ? odunc.kitapBaslik : 'Bilinmiyor'}">Sefiller</span></td>
+                            <td th:text="${odunc.kitapYazari != null ? odunc.kitapYazari : '-'}">Victor Hugo</td>
+                            <td th:text="${odunc.verilisTarihi != null ? #temporals.format(odunc.verilisTarihi, 'dd/MM/yyyy') : '-'}">12/05/2026</td>
+                            <td th:text="${odunc.teslimTarihi != null ? #temporals.format(odunc.teslimTarihi, 'dd/MM/yyyy') : '-'}">26/05/2026</td>
+                            <td th:if="${odunc.durum == 'TAMAMLANDI' or odunc.durum == 'TESLIM_EDILDI'}">-</td>
+                            <td th:unless="${odunc.durum == 'TAMAMLANDI' or odunc.durum == 'TESLIM_EDILDI'}" 
+                                th:text="${odunc.kalanGunSayisi() > 0 ? odunc.kalanGunSayisi() + ' Gün' : (odunc.kalanGunSayisi() < 0 ? 'Geçti' : 'Bugün')}"
+                                th:style="${odunc.kalanGunSayisi() < 0 ? 'color: var(--danger); font-weight: 600;' : ''}">11 Gün</td>
+                            <td>
+                                <span class="status-badge" 
+                                      th:classappend="${(odunc.durum == 'TAMAMLANDI' or odunc.durum == 'TESLIM_EDILDI') ? 'status-returned' : (odunc.durum == 'GECIKMIS' ? 'status-overdue' : 'status-active')}" 
+                                      th:text="${(odunc.durum == 'TAMAMLANDI' or odunc.durum == 'TESLIM_EDILDI') ? 'İade Edilenler' : (odunc.durum == 'GECIKMIS' ? 'Gecikenler' : 'Devam Edenler')}">
+                                    Devam Edenler
+                                </span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(oduncler)}">
+                            <td colspan="6" class="text-center" style="padding: 2rem;">Hiç ödünç aldığınız kitap bulunmamaktadır.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -711,27 +772,22 @@
                         </tr>
                     </thead>
                     <tbody id="penaltiesBody">
-                        <tr class="selectable-row">
+                        <tr class="selectable-row" th:each="ceza : ${cezalar}">
                             <td class="checkbox-cell">
-                                <input type="checkbox" class="custom-checkbox penalty-checkbox" value="101">
+                                <input type="checkbox" class="custom-checkbox penalty-checkbox" th:value="${ceza.id}">
                             </td>
-                            <td>#101</td>
-                            <td><span style="font-weight: 500;">Simyacı</span></td>
-                            <td>3 Gün</td>
-                            <td>Süresi geçen kitap için otomatik ceza.</td>
-                            <td class="amount">15.00 ₺</td>
-                            <td><span class="status-badge status-overdue">Ödenmedi</span></td>
+                            <td th:text="'#' + ${ceza.id}">#101</td>
+                            <td><span style="font-weight: 500;" th:text="${ceza.kitapAdi != null ? ceza.kitapAdi : 'Bilinmiyor'}">Simyacı</span></td>
+                            <td th:text="${ceza.gecikmeGunu > 0 ? ceza.gecikmeGunu + ' Gün' : '-'}">3 Gün</td>
+                            <td th:text="${ceza.aciklama}">Açıklama</td>
+                            <td class="amount" th:text="${ceza.cezaMiktari} + ' ₺'">15.00 ₺</td>
+                            <td>
+                                <span class="status-badge" th:classappend="${ceza.odendiMi ? 'status-returned' : 'status-overdue'}" 
+                                      th:text="${ceza.odendiMi ? 'Ödendi' : 'Ödenmedi'}">Ödenmedi</span>
+                            </td>
                         </tr>
-                        <tr class="selectable-row">
-                            <td class="checkbox-cell">
-                                <input type="checkbox" class="custom-checkbox penalty-checkbox" value="102">
-                            </td>
-                            <td>#102</td>
-                            <td><span style="font-weight: 500;">1984</span></td>
-                            <td>1 Gün</td>
-                            <td>Gecikme cezası yansıtıldı.</td>
-                            <td class="amount">5.00 ₺</td>
-                            <td><span class="status-badge status-overdue">Ödenmedi</span></td>
+                        <tr th:if="${#lists.isEmpty(cezalar)}">
+                            <td colspan="7" class="text-center" style="padding: 2rem;">Hiç cezanız bulunmamaktadır.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -749,22 +805,83 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Tab Switching Logic
-            const tabBtns = document.querySelectorAll('.tab-btn');
-            const tabContents = document.querySelectorAll('.tab-content');
+            // Kitap Listem Arama ve Filtreleme İşlemleri
+            const oduncSearchInput = document.getElementById('oduncSearchInput');
+            const oduncSortSelect = document.getElementById('oduncSortSelect');
+            const statusFilters = document.querySelectorAll('.status-filter');
+            const userOduncBody = document.getElementById('userOduncBody');
 
-            tabBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    // Remove active from all
-                    tabBtns.forEach(b => b.classList.remove('active'));
-                    tabContents.forEach(c => c.classList.remove('active'));
+            function applyOduncFilters() {
+                if(!userOduncBody) return;
+                const searchTerm = oduncSearchInput.value.toLowerCase();
+                const sortMode = oduncSortSelect.value;
+                const rows = Array.from(userOduncBody.querySelectorAll('.odunc-row'));
+                
+                // Seçili durumları al
+                const selectedStatusCb = Array.from(statusFilters).find(cb => cb.checked);
+                const selectedStatus = selectedStatusCb ? selectedStatusCb.value : 'Tümü';
+
+                // Filtreleme
+                rows.forEach(row => {
+                    const textContent = row.textContent.toLowerCase();
+                    const statusText = row.querySelector('.status-badge').textContent.trim();
                     
-                    // Add active to clicked
-                    btn.classList.add('active');
-                    const targetId = btn.getAttribute('data-target');
-                    document.getElementById(targetId).classList.add('active');
+                    const matchesSearch = textContent.includes(searchTerm);
+                    const matchesStatus = (selectedStatus === 'Tümü' || selectedStatus === statusText);
+                    
+                    if (matchesSearch && matchesStatus) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
                 });
-            });
+
+                // Sıralama
+                if (sortMode !== 'default') {
+                    const visibleRows = rows.filter(row => row.style.display !== 'none');
+                    visibleRows.sort((a, b) => {
+                        let valA = '', valB = '';
+                        
+                        if (sortMode.includes('kitap')) {
+                            valA = a.cells[0].textContent.trim().toLowerCase();
+                            valB = b.cells[0].textContent.trim().toLowerCase();
+                        } else if (sortMode.includes('tarih')) {
+                            const dateA = a.cells[2].textContent.trim().split('.');
+                            const dateB = b.cells[2].textContent.trim().split('.');
+                            valA = dateA.length === 3 ? dateA[2]+dateA[1]+dateA[0] : '';
+                            valB = dateB.length === 3 ? dateB[2]+dateB[1]+dateB[0] : '';
+                        }
+
+                        if (valA < valB) return sortMode.startsWith('az') || sortMode.endsWith('eski') ? -1 : 1;
+                        if (valA > valB) return sortMode.startsWith('az') || sortMode.endsWith('eski') ? 1 : -1;
+                        return 0;
+                    });
+
+                    visibleRows.forEach(row => userOduncBody.appendChild(row));
+                }
+            }
+
+            if(oduncSearchInput) oduncSearchInput.addEventListener('input', applyOduncFilters);
+            if(oduncSortSelect) oduncSortSelect.addEventListener('change', applyOduncFilters);
+            statusFilters.forEach(cb => cb.addEventListener('change', applyOduncFilters));
+
+            function updateInfoCards() {
+                if(!userOduncBody) return;
+                const rows = Array.from(userOduncBody.querySelectorAll('.odunc-row'));
+                let devam = 0;
+                let geciken = 0;
+                rows.forEach(row => {
+                    const statusText = row.querySelector('.status-badge').textContent.trim();
+                    if(statusText === 'Devam Edenler') devam++;
+                    else if(statusText === 'Gecikenler') geciken++;
+                });
+                const elDevam = document.getElementById('infoDevamEden');
+                const elGeciken = document.getElementById('infoGeciken');
+                if(elDevam) elDevam.textContent = devam;
+                if(elGeciken) elGeciken.textContent = geciken;
+            }
+            updateInfoCards();
+
 
             // Checkbox Logic for Penalties
             const selectAllPenalties = document.getElementById('selectAllPenalties');
@@ -948,14 +1065,21 @@
                             const today = new Date().toLocaleDateString('tr-TR');
 
                             const newRow = document.createElement('tr');
+                            newRow.className = 'odunc-row';
                             newRow.innerHTML = `
                                 <td><span style="font-weight: 500;">${bookName}</span></td>
                                 <td>Gecikme Cezası Ödendi</td>
                                 <td>-</td>
                                 <td>${today}</td>
-                                <td><span class="status-badge status-returned" style="background-color: #def7ec; color: #03543f;">${amount} Ödendi</span></td>
+                                <td>-</td>
+                                <td><span class="status-badge status-returned" style="background-color: #def7ec; color: #03543f;">İade Edildi</span></td>
                             `;
-                            gecmisBody.insertBefore(newRow, gecmisBody.firstChild);
+                            
+                            // Eklenen yeni satırı üst kısma koyuyoruz, fitreleri de tekrar uyguluyoruz
+                            userOduncBody.insertBefore(newRow, userOduncBody.firstChild);
+                            applyOduncFilters();
+                            updateInfoCards();
+                            
                             row.remove();
                         });
 

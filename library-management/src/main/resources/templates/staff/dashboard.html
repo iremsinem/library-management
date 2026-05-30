@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Yönetim Paneli - Library Admin</title>
+    <title>Personel Paneli - Library Staff</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -54,25 +54,14 @@
         .table tbody tr:hover { background: rgba(255, 255, 255, 0.8) !important; }
         .table tbody td { border-bottom: 1px solid rgba(255, 255, 255, 0.5) !important; vertical-align: middle !important; }
         
-        .bg-active-yellow { background-color: #eab308 !important; color: white !important; }
-
         .form-control, .form-select { border-radius: 12px !important; border: 1px solid rgba(255, 255, 255, 0.8) !important; background: rgba(255, 255, 255, 0.7) !important; font-size: 14px !important; }
         .form-control:focus, .form-select:focus { border-color: #4f46e5 !important; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important; background: #fff !important; }
 
-        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; color: #1e293b; margin: 0; padding: 0; }
-        
-        /* Glassmorphism for Stats Cards */
-        .card-stats { 
-            background: rgba(255, 255, 255, 0.7) !important;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.9) !important; 
-            border-radius: 16px !important;
-            transition: all 0.3s ease; 
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05) !important;
-        }
-        .card-stats:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important; }
-        
+        .bg-active-yellow { background-color: #eab308 !important; color: white !important; }
+
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 0; }
+        .card-stats { border: 1px solid rgba(226, 232, 240, 0.8); transition: all 0.3s ease; border-radius: 12px; }
+        .card-stats:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
         .content-area { padding: 2rem; }
         .icon-box { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 1.5rem; }
         .quick-action-btn { transition: all 0.2s; border-radius: 8px; font-weight: 500; display: flex; align-items: center; padding: 12px 16px; border: 1px solid #e2e8f0; background: #fff; text-decoration: none; color: #1e293b; margin-bottom: 12px; }
@@ -82,20 +71,19 @@
 </head>
 <body>
 
-<div th:replace="~{admin/sidebar :: sidebar}" id="sidebar" class="sidebar">
+<div th:replace="~{staff/sidebar :: sidebar}" id="sidebar" class="sidebar">
     <!-- Statik önizleme için (Thymeleaf çalıştırılmadığında tarayıcının göreceği kod) -->
     <div class="sidebar-header">
-        <h5 class="sidebar-title m-0">Library Admin</h5>
+        <h5 class="sidebar-title m-0">Library Staff</h5>
         <button class="toggle-btn" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     </div>
     <ul class="nav flex-column mt-3">
-        <li class="nav-item"><a th:href="@{/admin/dashboard}" href="dashboard.html" class="nav-link"><i class="fa-solid fa-chart-pie"></i><span class="sidebar-text">Dashboard</span></a></li>
+        <li class="nav-item"><a th:href="@{/staff/dashboard}" href="dashboard.html" class="nav-link"><i class="fa-solid fa-chart-pie"></i><span class="sidebar-text">Dashboard</span></a></li>
         <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-book"></i><span class="sidebar-text">Kitap Listeleri</span></a></li>
         <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-users"></i><span class="sidebar-text">Kullanıcılar</span></a></li>
-        <li class="nav-item"><a th:href="@{/odunc-islemleri}" href="odunc.html" class="nav-link"><i class="fa-solid fa-hand-holding-hand"></i><span class="sidebar-text">Ödünç İşlemleri</span></a></li>
-        <li class="nav-item"><a th:href="@{/cezalar}" href="ceza.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i><span class="sidebar-text">Cezalar</span></a></li>
+        <li class="nav-item"><a th:href="@{/staff/odunc-islemleri}" href="odunc.html" class="nav-link"><i class="fa-solid fa-hand-holding-hand"></i><span class="sidebar-text">Ödünç İşlemleri</span></a></li>
+        <li class="nav-item"><a th:href="@{/staff/cezalar}" href="ceza.html" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i><span class="sidebar-text">Cezalar</span></a></li>
         <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span class="sidebar-text">Rezervasyonlar</span></a></li>
-        <li class="nav-item"><a href="#" class="nav-link"><i class="fa-solid fa-gear"></i><span class="sidebar-text">Sistem Ayarları</span></a></li>
     </ul>
     <style>
         .sidebar { width: 260px; background: #1e293b; color: #fff; min-height: 100vh; position: fixed; top: 0; left: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; overflow-y: auto; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
@@ -142,8 +130,8 @@
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h1 class="h2 fw-bold text-dark m-0">Dashboard</h1>
-
+                <h1 class="h2 fw-bold text-dark m-0">Personel Paneli</h1>
+                <p class="text-muted m-0">Kütüphane günlük işlemlerini buradan yürütebilirsiniz.</p>
             </div>
         </div>
 
@@ -203,13 +191,13 @@
             </div>
         </div>
 
-        <div class="row g-4 align-items-stretch">
+        <div class="row g-4">
             <!-- Recent Activity Table -->
             <div class="col-12 col-lg-8">
-                <div class="card shadow-sm border-0 h-100" style="border-radius: 16px; overflow: hidden;">
+                <div class="card shadow-sm border-0 rounded-3">
                     <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
                         <h5 class="m-0 fw-bold text-dark">Son Ödünç İşlemleri</h5>
-                        <a th:href="@{/odunc-islemleri}" href="odunc.html" class="btn btn-sm btn-outline-primary" style="border-radius: 8px;">Tümünü Gör</a>
+                        <a th:href="@{/odunc-islemleri}" href="odunc.html" class="btn btn-sm btn-outline-primary">Tümünü Gör</a>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -253,7 +241,7 @@
 
             <!-- Quick Actions Panel -->
             <div class="col-12 col-lg-4">
-                <div class="card shadow-sm border-0 h-100" style="border-radius: 16px; overflow: hidden;">
+                <div class="card shadow-sm border-0 rounded-3 h-100">
                     <div class="card-header bg-white border-bottom py-3">
                         <h5 class="m-0 fw-bold text-dark">Hızlı İşlemler</h5>
                     </div>

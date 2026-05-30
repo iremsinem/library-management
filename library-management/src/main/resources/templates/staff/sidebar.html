@@ -1,18 +1,18 @@
 <div th:fragment="sidebar" id="sidebar" class="sidebar">
     <div class="sidebar-header">
-        <h5 class="sidebar-title m-0" th:text="${session.aktifKullanici != null ? session.aktifKullanici.ad + ' ' + session.aktifKullanici.soyad : 'Library Admin'}">Library Admin</h5>
+        <h5 class="sidebar-title m-0" th:text="${session.aktifKullanici != null ? session.aktifKullanici.ad + ' ' + session.aktifKullanici.soyad : 'Library Staff'}">Library Staff</h5>
         <button class="toggle-btn" id="sidebarToggle"><i class="fa-solid fa-bars"></i></button>
     </div>
     <ul class="nav flex-column mt-3">
-        <li class="nav-item"><a th:href="@{/dashboard/admin}" class="nav-link"><i class="fa-solid fa-chart-pie"></i><span class="sidebar-text">Dashboard</span></a></li>
-        <li class="nav-item"><a th:href="@{/admin/kitaplar}" class="nav-link"><i class="fa-solid fa-book"></i><span class="sidebar-text">Kitap Listeleri</span></a></li>
-        <li class="nav-item"><a th:href="@{/admin/kullanicilar}" class="nav-link"><i class="fa-solid fa-users"></i><span class="sidebar-text">Kullanıcılar</span></a></li>
-        <li class="nav-item"><a th:href="@{/odunc-islemleri}" class="nav-link"><i class="fa-solid fa-hand-holding-hand"></i><span class="sidebar-text">Ödünç İşlemleri</span></a></li>
-        <li class="nav-item"><a th:href="@{/cezalar}" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i><span class="sidebar-text">Cezalar</span></a></li>
-        <li class="nav-item"><a th:href="@{/admin/rezervasyonlar}" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span class="sidebar-text">Rezervasyonlar</span></a></li>
-        <li class="nav-item"><a th:href="@{/admin/sistem-ayarlari}" class="nav-link"><i class="fa-solid fa-gear"></i><span class="sidebar-text">Sistem Ayarları</span></a></li>
+        <li class="nav-item"><a th:href="@{/dashboard/staff}" href="dashboard.html" class="nav-link"><i class="fa-solid fa-chart-pie"></i><span class="sidebar-text">Dashboard</span></a></li>
+        <li class="nav-item"><a th:href="@{/staff/kitaplar}" class="nav-link"><i class="fa-solid fa-book"></i><span class="sidebar-text">Kitap Listeleri</span></a></li>
+        <li class="nav-item"><a th:href="@{/staff/kullanicilar}" class="nav-link"><i class="fa-solid fa-users"></i><span class="sidebar-text">Kullanıcılar</span></a></li>
+        <li class="nav-item"><a th:href="@{/odunc-islemleri/staff}" class="nav-link"><i class="fa-solid fa-hand-holding-hand"></i><span class="sidebar-text">Ödünç İşlemleri</span></a></li>
+        <li class="nav-item"><a th:href="@{/cezalar/staff}" class="nav-link"><i class="fa-solid fa-money-bill-wave"></i><span class="sidebar-text">Cezalar</span></a></li>
+        <li class="nav-item"><a th:href="@{/staff/rezervasyonlar}" class="nav-link"><i class="fa-solid fa-calendar-check"></i><span class="sidebar-text">Rezervasyonlar</span></a></li>
         <li class="nav-item mt-auto"> <a th:href="@{/logout}" class="nav-link text-danger"> <i class="fa-solid fa-right-from-bracket"></i> <span class="sidebar-text">Çıkış Yap</span> </a> </li>
     </ul>
+    
     <style>
         /* Modern Floating & Glassmorphism Sidebar */
         .sidebar { 
@@ -58,57 +58,33 @@
             align-items: center; 
             text-decoration: none; 
             font-size: 15px; 
-            font-weight: 600; 
+            font-weight: 600;
         }
-        
         .sidebar .nav-link:hover { 
-            color: #4f46e5; 
-            background: rgba(255,255,255,0.7); 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-            transform: translateY(-2px);
+            color: #3b82f6; 
+            background: rgba(255, 255, 255, 0.7); 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transform: translateX(5px);
         }
-        
-        .sidebar .nav-link i { 
-            min-width: 40px; 
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.15rem; 
-            margin-right: 12px; 
-            background: rgba(255,255,255,0.5);
-            border-radius: 14px;
-            transition: all 0.3s;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-        }
-        
-        .sidebar .nav-link:hover i {
-            background: #4f46e5;
-            color: #fff;
-            box-shadow: 0 6px 12px rgba(79, 70, 229, 0.3);
-        }
-        
-        .sidebar.collapsed .nav-link i { margin-right: 0; }
+        .sidebar .nav-link i { min-width: 32px; font-size: 1.25rem; text-align: center; margin-right: 12px; transition: 0.3s; }
+        .sidebar.collapsed .nav-link i { margin-right: 0; font-size: 1.4rem; }
         .sidebar .sidebar-text { transition: opacity 0.3s; }
         .sidebar.collapsed .sidebar-text { opacity: 0; display: none; }
         
-        .toggle-btn { background: #fff; color: #475569; border: 1px solid rgba(0,0,0,0.05); font-size: 1rem; cursor: pointer; width: 36px; height: 36px; border-radius: 12px; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; }
-        .toggle-btn:hover { color: #4f46e5; transform: scale(1.05); }
+        .toggle-btn { background: rgba(255,255,255,0.5); color: #475569; border: 1px solid rgba(0,0,0,0.1); font-size: 1rem; cursor: pointer; padding: 6px 10px; border-radius: 10px; transition: 0.3s; }
+        .toggle-btn:hover { background: #fff; color: #3b82f6; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         
-        .content-area { margin-left: 300px; padding: 20px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); min-height: 100vh; }
+        .content-area { margin-left: 300px; padding-top: 20px; padding-right: 20px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); min-height: 100vh; }
         .content-area.collapsed { margin-left: 120px; }
-        
-        /* Logout Button Customization */
-        .sidebar .nav-item.mt-auto { margin-top: auto !important; padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.05); }
-        .sidebar .nav-link.text-danger:hover { color: #ef4444; }
-        .sidebar .nav-link.text-danger:hover i { background: #ef4444; color: #fff; box-shadow: 0 6px 12px rgba(239, 68, 68, 0.3); }
     </style>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('sidebar');
             const contentArea = document.querySelector('.content-area');
             const toggleBtn = document.getElementById('sidebarToggle');
-
+            
+            // Check localStorage for sidebar state
             if(localStorage.getItem('sidebarCollapsed') === 'true') {
                 sidebar.classList.add('collapsed');
                 if(contentArea) contentArea.classList.add('collapsed');

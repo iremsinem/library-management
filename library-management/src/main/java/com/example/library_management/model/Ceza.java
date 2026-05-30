@@ -27,17 +27,21 @@ public class Ceza {
     @Column(name = "odendi_mi")
     private boolean odendiMi;
 
-    // Arayüzde (UI) göstermek için kullanılan, veritabanı tablosunda olmayan alan
+
     @Transient
     private String kullaniciAdi;
 
-    // --- CONSTRUCTORLAR (Hocanın Sayfa 31'deki yapısına göre) ---
+    @Transient
+    private String kitapAdi;
 
-    // 1. Varsayılan Constructor (JPA için ZORUNLU)
+    @Transient
+    private long gecikmeGunu;
+
+
     public Ceza() {
     }
 
-    // 2. ID hariç Constructor (Yeni ceza kaydı oluştururken kullanılır)
+
     public Ceza(int kullaniciId, int oduncId, BigDecimal cezaMiktari, String aciklama, boolean odendiMi) {
         this.kullaniciId = kullaniciId;
         this.oduncId = oduncId;
@@ -46,7 +50,7 @@ public class Ceza {
         this.odendiMi = odendiMi;
     }
 
-    // 3. Tüm alanları içeren Constructor (Hocanın id'li constructor yapısı)
+
     public Ceza(int id, int kullaniciId, int oduncId, BigDecimal cezaMiktari, String aciklama, boolean odendiMi) {
         this.id = id;
         this.kullaniciId = kullaniciId;
@@ -55,8 +59,6 @@ public class Ceza {
         this.aciklama = aciklama;
         this.odendiMi = odendiMi;
     }
-
-    // --- GETTER VE SETTER METOTLARI ---
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
@@ -78,6 +80,12 @@ public class Ceza {
 
     public String getKullaniciAdi() { return kullaniciAdi; }
     public void setKullaniciAdi(String kullaniciAdi) { this.kullaniciAdi = kullaniciAdi; }
+
+    public String getKitapAdi() { return kitapAdi; }
+    public void setKitapAdi(String kitapAdi) { this.kitapAdi = kitapAdi; }
+
+    public long getGecikmeGunu() { return gecikmeGunu; }
+    public void setGecikmeGunu(long gecikmeGunu) { this.gecikmeGunu = gecikmeGunu; }
 
     @Override
     public String toString() {
